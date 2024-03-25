@@ -11,7 +11,7 @@ typedef struct HTentry* HTpointer;
 typedef struct HTentry {
 	int index;
 	HTpointer next;
-}HTentry;
+} HTentry;
 
 HTpointer HT[HASH_TABLE_SIZE];
 
@@ -101,8 +101,8 @@ int main() {
 	}
 
 	while ((c = fgetc(fp)) != EOF) { // 파일 끝까지 문자 읽기
+		// 구분자를 만나거나 버퍼 크기 제한에 도달했을 때
 		if (strchr(separators, c) != NULL || index_next >= sizeof(str_pool) - 1) {
-			// 구분자를 만나거나 버퍼 크기 제한에 도달했을 때
 			if (index_start < index_next) { // 버퍼에 내용이 있을 때만 출력
 				str_pool[index_next] = '\0'; // 문자열 종료
 
@@ -121,12 +121,11 @@ int main() {
 					if (htp == NULL) {
 						add_hash_table(index_start, hash_value);
 						printf("%s (Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
-						index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
 					}
 					else {
 						printf("%s (Already exists, Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
-						index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
 					}
+					index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
 				}
 			}
 			if (strchr(separators, c) == NULL) {
