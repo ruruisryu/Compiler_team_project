@@ -83,7 +83,6 @@ void print_sym_table() {
 	}
 }
 
-
 int main() {
 	FILE* fp;
 	int result;
@@ -113,18 +112,30 @@ int main() {
 					index_next = index_start; // 버퍼 인덱스 초기화
 				}
 				else {
-					sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
-					sym_table[index++][1] = (int)strlen(str_pool + index_start); // str_pool의 index_start 위치부터 문자열의 끝까지 길이 계산
-
-					hash_value = divisionMethod(str_pool + index_start, HASH_TABLE_SIZE);
-
-					HTpointer htp = lookup_hash_table(index_start, hash_value);
-					if (htp == NULL) {
-						add_hash_table(index_start, hash_value);
-						printf("%s (Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
+					// 영어 대소문자, 밑줄, 숫자, 구분자 이외의 문자가 있는지 체크
+					int is_valid = 1;
+					for (int i = index_start; i <= index_next; i++) {
+						if (!isalnum(str_pool[i]) && str_pool[i] != '_' && !strchr(separators, str_pool[i])) {
+							is_valid = 0;
+						}
+					}
+					if (!is_valid) {
+						printf("Error - invalid identifier (%s)\n", str_pool + index_start);
 					}
 					else {
-						printf("%s (Already exists, Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
+						sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
+						sym_table[index++][1] = (int)strlen(str_pool + index_start); // str_pool의 index_start 위치부터 문자열의 끝까지 길이 계산
+
+						hash_value = divisionMethod(str_pool + index_start, HASH_TABLE_SIZE);
+
+						HTpointer htp = lookup_hash_table(index_start, hash_value);
+						if (htp == NULL) {
+							add_hash_table(index_start, hash_value);
+							printf("%s (Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
+						}
+						else {
+							printf("%s (Already exists, Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
+						}
 					}
 					index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
 				}
