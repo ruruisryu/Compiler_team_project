@@ -121,6 +121,7 @@ int main() {
 					}
 					if (!is_valid) {
 						printf("Error - invalid identifier (%s)\n", str_pool + index_start);
+						index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
 					}
 					else {
 						sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
