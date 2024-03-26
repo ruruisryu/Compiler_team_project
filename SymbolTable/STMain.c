@@ -50,7 +50,6 @@ void add_hash_table(int id_index, int hscode) {
 }
 
 print_hash_table() {
-	int i;
 	printf("\nHash Table\n");
 	for (int i = 0; i < HASH_TABLE_SIZE; i++) {
 		HTpointer curr = HT[i];
@@ -60,12 +59,11 @@ print_hash_table() {
 		}
 
 		printf("[%d]: ", i);
-		while (curr != NULL && curr->next != NULL) {
+		while (curr->next != NULL) {
 			printf("%d -> ", curr->index);
 			curr = curr->next;
 		}
-		printf("%d", curr->index);
-		printf("\n");
+		printf("%d\n", curr->index);
 	}
 }
 
