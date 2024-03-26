@@ -112,6 +112,11 @@ int main() {
 					printf("Error - start with digit (%s)\n", str_pool + index_start); // 에러 출력
 					index_next = index_start; // 버퍼 인덱스 초기화
 				}
+				// 식별자의 길이가 15자 이내인지 체크
+				else if (index_next - index_start > 15) {
+					printf("Error - maximum length is 15 (%s)\n", str_pool + index_start);
+					index_next = index_start; 
+				}
 				else {
 					sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
 					sym_table[index++][1] = (int)strlen(str_pool + index_start); // str_pool의 index_start 위치부터 문자열의 끝까지 길이 계산
