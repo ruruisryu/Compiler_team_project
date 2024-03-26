@@ -54,12 +54,17 @@ print_hash_table() {
 	printf("\nHash Table\n");
 	for (int i = 0; i < HASH_TABLE_SIZE; i++) {
 		HTpointer curr = HT[i];
+
+		if (curr == NULL) { // 해시 버킷이 비어 있다면 출력하지 않음
+			continue;
+		}
+
 		printf("[%d]: ", i);
-		while (curr != NULL) {
+		while (curr != NULL && curr->next != NULL) {
 			printf("%d -> ", curr->index);
 			curr = curr->next;
 		}
-		printf("NULL");
+		printf("%d", curr->index);
 		printf("\n");
 	}
 }
