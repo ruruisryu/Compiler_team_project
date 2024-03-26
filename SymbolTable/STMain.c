@@ -49,7 +49,7 @@ void add_hash_table(int id_index, int hscode) {
 	}
 }
 
-print_hash_table() {
+void print_hash_table() {
 	printf("\nHash Table\n");
 	for (int i = 0; i < HASH_TABLE_SIZE; i++) {
 		HTpointer curr = HT[i];
@@ -106,10 +106,18 @@ int main() {
 
 	while ((c = fgetc(fp)) != EOF) { // 파일 끝까지 문자 읽기
 		// 구분자를 만나거나 버퍼 크기 제한에 도달했을 때
-		if (strchr(separators, c) != NULL || index_next >= sizeof(str_pool) - 1) {
+		if (strchr(separators, c) != NULL) {
 			if (index_start < index_next) { // 버퍼에 내용이 있을 때만 출력
-				str_pool[index_next] = '\0'; // 문자열 종료
 
+				// 입력이 string pool의 크기를 초과할 경우
+				// 마지막 문자열은 제외하도록 처리하고 while문을 빠져나감.
+				if (index_next >= SYM_TABLE_SIZE) {
+					index_next = index_start;
+					printf("Error - OVERFLOW...\n\n");
+					break;
+				}
+
+				str_pool[index_next] = '\0'; // 문자열 종료
 				// 문자열의 시작 문자가 숫자인지 체크
 				if (str_pool[index_start] >= '0' && str_pool[index_start] <= '9') {
 					printf("Error - start with digit (%s)\n", str_pool + index_start); // 에러 출력
