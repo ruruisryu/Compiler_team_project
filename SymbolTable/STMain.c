@@ -50,17 +50,20 @@ void add_hash_table(int id_index, int hscode) {
 }
 
 print_hash_table() {
-	int i;
 	printf("\nHash Table\n");
 	for (int i = 0; i < HASH_TABLE_SIZE; i++) {
 		HTpointer curr = HT[i];
+
+		if (curr == NULL) { // 해시 버킷이 비어 있다면 출력하지 않음
+			continue;
+		}
+
 		printf("[%d]: ", i);
-		while (curr != NULL) {
+		while (curr->next != NULL) {
 			printf("%d -> ", curr->index);
 			curr = curr->next;
 		}
-		printf("NULL");
-		printf("\n");
+		printf("%d\n", curr->index);
 	}
 }
 
@@ -111,6 +114,11 @@ int main() {
 				if (str_pool[index_start] >= '0' && str_pool[index_start] <= '9') {
 					printf("Error - start with digit (%s)\n", str_pool + index_start); // 에러 출력
 					index_next = index_start; // 버퍼 인덱스 초기화
+				}
+				// 식별자의 길이가 15자 이내인지 체크
+				else if (index_next - index_start > 15) {
+					printf("Error - maximum length is 15 (%s)\n", str_pool + index_start);
+					index_next = index_start; 
 				}
 				else {
 					sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
