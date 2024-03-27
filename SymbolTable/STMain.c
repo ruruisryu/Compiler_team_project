@@ -98,12 +98,12 @@ int main() {
 
 	init_sym_table();
 
-	result = fopen_s(&fp, "example.txt", "r"); // 파일을 읽기 모드로 열기
+	result = fopen_s(&fp, "example2_error.txt", "r"); // 파일을 읽기 모드로 열기
 	if (result != 0) {
 		printf("파일 열기 실패(%d)\n", result);
 		return -1;
 	}
-
+	 
 	while ((c = fgetc(fp)) != EOF) { // 파일 끝까지 문자 읽기
 		// 구분자를 만나거나 버퍼 크기 제한에 도달했을 때
 		if (strchr(separators, c) != NULL) {

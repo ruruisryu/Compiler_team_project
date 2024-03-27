@@ -144,9 +144,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HashFunc.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="STMain.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="example1_error.txt" />
+    <Text Include="example2.txt" />
+    <Text Include="example2_error.txt" />
+    <Text Include="example_3_error.txt" />
+    <Text Include="example_3.txt" />
     <Text Include="example.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
