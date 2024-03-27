@@ -137,7 +137,7 @@ int main() {
 						}
 					}
 					if (!is_valid) {
-						printf("Error - invalid identifier (%s)\n", str_pool + index_start);
+						printf("Error - invalid character in identifier (%s)\n", str_pool + index_start);
 						index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
 					}
 					else {
