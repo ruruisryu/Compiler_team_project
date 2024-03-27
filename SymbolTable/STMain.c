@@ -124,7 +124,7 @@ int main() {
 					index_next = index_start; // 버퍼 인덱스 초기화
 				}
 				// 식별자의 길이가 15자 이내인지 체크
-				else if (index_next - index_start > 15) {
+				else if (index_next - index_start > MAX_IDENTIFIER_SIZE) {
 					printf("Error - maximum length is 15 (%s)\n", str_pool + index_start);
 					index_next = index_start; 
 				}
