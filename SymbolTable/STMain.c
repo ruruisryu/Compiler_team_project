@@ -126,7 +126,7 @@ int main() {
 				// 식별자의 길이가 15자 이내인지 체크
 				else if (index_next - index_start > MAX_IDENTIFIER_SIZE) {
 					printf("Error - maximum length is 15 (%s)\n", str_pool + index_start);
-					index_next = index_start; 
+					index_next = index_start;  // 버퍼 인덱스 초기화
 				}
 				else {
 					// 영어 대소문자, 밑줄, 숫자, 구분자 이외의 문자가 있는지 체크
@@ -138,7 +138,7 @@ int main() {
 					}
 					if (!is_valid) {
 						printf("Error - invalid character in identifier (%s)\n", str_pool + index_start);
-						index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
+						index_next = index_start; // 버퍼 인덱스 초기화
 					}
 					else {
 						sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
@@ -153,6 +153,7 @@ int main() {
 						}
 						else {
 							printf("%s (Already exists, Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
+							index_next = index_start; // 버퍼 인덱스 초기화
 						}
 					}
 					index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
