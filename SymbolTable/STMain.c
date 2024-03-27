@@ -112,7 +112,7 @@ int main() {
 				// 입력이 string pool의 크기를 초과할 경우
 				// 마지막 문자열은 제외하도록 처리하고 while문을 빠져나감.
 				if (index_next >= SYM_TABLE_SIZE) {
-					index_next = index_start;
+					index_next = index_start; // 버퍼 인덱스 초기화
 					printf("Error - OVERFLOW...\n\n");
 					break;
 				}
@@ -132,7 +132,7 @@ int main() {
 					// 영어 대소문자, 밑줄, 숫자, 구분자 이외의 문자가 있는지 체크
 					int is_valid = 1;
 					for (int i = index_start; i <= index_next; i++) {
-						if (!isalnum(str_pool[i]) && str_pool[i] != '_' && !strchr(separators, str_pool[i])) {
+						if (!isalnum(str_pool[i]) && str_pool[i] != '_' && !strchr(separators, str_pool[i])) { // isalnum: 알파벳이나 숫자면 1을 반환
 							is_valid = 0;
 						}
 					}
