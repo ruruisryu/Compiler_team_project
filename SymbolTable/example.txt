@@ -1,8 +1,6 @@
-5
-this is the data
-@ 
-81
-#
-!
-_+
-hello
+This is test data for the
+hashtable assignment
+x 123 x 
+thisisokayhaha
+thisisnotokayhah
+
