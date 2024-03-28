@@ -7,7 +7,7 @@
 // 팀 10 (유서현, 김서현, 이서연)
 
 /*유서현: 입력이 string pool 크기 초과하는 경우 에러 메시지 출력 & 현재까지 입력된 식별자에 대해 정상 출력 처리 (33.3%)
-* 김서현: 식별자 길이 15자 넘어가는 경우 에러 메시지 출력 & 해시 버킷의 비어있는 부분은 출력하지 않으면서 해시 버킷과 심볼 테이블 출력 (33.3%)
+* 김서현: 식별자 길이 15자 넘어가는 경우 에러 메시지 출력 & 해시 버킷의 비어있는 부분은 출력하지 않으면서 해시 버킷과 심볼 테이블 출력, 중복 식별자 처리 (33.3%)
 * 이서연: 식별자 첫 글자는 숫자가 오는 경우 에러 메시지 출력 & 식별자에 영어 대소문자, _ , 구분자, 숫자 제외한 다른 문자 입력 시 에러 메시지 출력 (33.3%)
 */
 
@@ -24,6 +24,7 @@ typedef struct HTentry {
 
 HTpointer HT[HASH_TABLE_SIZE];
 
+// 해시테이블에서 찾고자 하는 값 반환
 HTpointer lookup_hash_table(int id_index, int hscode) {
 	HTpointer entry = HT[hscode];
 
@@ -37,6 +38,7 @@ HTpointer lookup_hash_table(int id_index, int hscode) {
 	return NULL; // 항목을 찾지 못한 경우 
 }
 
+// 해시테이블에 추가
 void add_hash_table(int id_index, int hscode) {
 	// 새 항목 생성 및 초기화
 	HTpointer newEntry = (HTpointer)malloc(sizeof(HTentry));
@@ -57,6 +59,7 @@ void add_hash_table(int id_index, int hscode) {
 	}
 }
 
+// 해시테이블 출력
 void print_hash_table() {
 	printf("\nHash Table\n");
 	for (int i = 0; i < HASH_TABLE_SIZE; i++) {
@@ -75,6 +78,7 @@ void print_hash_table() {
 	}
 }
 
+// 심볼 테이블 초기화
 void init_sym_table() {
 	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
 		sym_table[i][0] = -1;
@@ -82,17 +86,19 @@ void init_sym_table() {
 	}
 }
 
+// 심볼테이블에서 찾고자 하는 값 반환
 int lookup_sym_table(int index_start) {
 	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
 		if (sym_table[i][0] != -1) {
 			if (!strcmp(str_pool + sym_table[i][0], str_pool + index_start)) {
-				return sym_table[i][0];
+				return i;
 			}
 		}
 	}
 	return -1;
 }
 
+// 심볼테이블 출력
 void print_sym_table() {
 	printf("\nSymbol Table\n");
 	printf("index\tLength\tSymbol\n");
@@ -164,7 +170,7 @@ int main() {
 					// 문자열이 이미 심볼 테이블에 저장되어있는지 확인
 					int already_exists = lookup_sym_table(index_start);
 					if (already_exists != -1) {
-						printf("%s (Already exists, Symbol Table Index: %d)\n", str_pool + index_start, already_exists); // 버퍼 내용 화면에 출력
+						printf("%s (Already exists, Symbol Table Info: Index {%d} Length {%d})\n", str_pool + index_start, sym_table[already_exists][0], sym_table[already_exists][1]); // 버퍼 내용 화면에 출력
 						index_start = ++index_next;
 						continue;
 					}
