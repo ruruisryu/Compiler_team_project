@@ -76,18 +76,27 @@ void print_hash_table() {
 }
 
 void init_sym_table() {
-	int i;
-	for (i = 0; i < SYM_TABLE_SIZE; i++) {
+	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
 		sym_table[i][0] = -1;
 		sym_table[i][1] = -1;
 	}
 }
 
+int lookup_sym_table(int index_start) {
+	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
+		if (sym_table[i][0] != -1) {
+			if (!strcmp(str_pool + sym_table[i][0], str_pool + index_start)) {
+				return sym_table[i][0];
+			}
+		}
+	}
+	return -1;
+}
+
 void print_sym_table() {
-	int i;
 	printf("\nSymbol Table\n");
 	printf("index\tLength\tSymbol\n");
-	for (i = 0; i < SYM_TABLE_SIZE; i++) {
+	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
 		if (sym_table[i][0] != -1) {
 			printf("%d\t%d\t%s\n", sym_table[i][0], sym_table[i][1], str_pool + sym_table[i][0]);
 		}
@@ -152,6 +161,14 @@ int main() {
 					index_next = index_start; // 버퍼 인덱스 초기화
 				}
 				else {
+					// 문자열이 이미 심볼 테이블에 저장되어있는지 확인
+					int already_exists = lookup_sym_table(index_start);
+					if (already_exists != -1) {
+						printf("%s (Already exists, Symbol Table Index: %d)\n", str_pool + index_start, already_exists); // 버퍼 내용 화면에 출력
+						index_start = ++index_next;
+						continue;
+					}
+
 					sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
 					sym_table[index++][1] = (int)strlen(str_pool + index_start); // str_pool의 index_start 위치부터 문자열의 끝까지 길이 계산
 
@@ -162,12 +179,8 @@ int main() {
 						add_hash_table(index_start, hash_value);
 						printf("%s (Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
 					}
-					else {
-						printf("%s (Already exists, Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
-						index_next = index_start; // 버퍼 인덱스 초기화
-					}
+					index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
 				}
-				index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
 			}
 		}
 		if (strchr(separators, c) == NULL) {
