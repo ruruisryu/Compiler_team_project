@@ -4,6 +4,13 @@
 #include "STMain.h"
 #include "HashFunc.h"
 
+// 팀 10 (유서현, 김서현, 이서연)
+
+/*유서현: 입력이 string pool 크기 초과하는 경우 에러 메시지 출력 & 현재까지 입력된 식별자에 대해 정상 출력 처리 (33.3%)
+* 김서현: 식별자 길이 15자 넘어가는 경우 에러 메시지 출력 & 해시 버킷의 비어있는 부분은 출력하지 않으면서 해시 버킷과 심볼 테이블 출력 (33.3%)
+* 이서연: 식별자 첫 글자는 숫자가 오는 경우 에러 메시지 출력 & 식별자에 영어 대소문자, _ , 구분자, 숫자 제외한 다른 문자 입력 시 에러 메시지 출력 (33.3%)
+*/
+
 char separators[] = " ,;\t\n\r\n";
 char str_pool[100];
 int sym_table[SYM_TABLE_SIZE][2];
@@ -98,7 +105,7 @@ int main() {
 
 	init_sym_table();
 
-	result = fopen_s(&fp, "example2.txt", "r"); // 파일을 읽기 모드로 열기
+	result = fopen_s(&fp, "example1_error.txt", "r"); // 파일을 읽기 모드로 열기
 	if (result != 0) {
 		printf("파일 열기 실패(%d)\n", result);
 		return -1;
