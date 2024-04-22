@@ -12,7 +12,7 @@
 */
 
 char separators[] = " ,;\t\n\r\n";
-char str_pool[100];
+char str_pool[STR_POOL_SIZE];
 int sym_table[SYM_TABLE_SIZE][2];
 int hash_value = -1;
 
@@ -137,7 +137,7 @@ int main() {
 
 			// 입력이 string pool의 크기를 초과할 경우
 			// 마지막 문자열은 제외하도록 처리하고 while문을 빠져나감.
-			if (index_next >= SYM_TABLE_SIZE) {
+			if (index_next >= STR_POOL_SIZE) {
 				index_next = index_start; // 버퍼 인덱스 초기화
 				printf("Error - OVERFLOW...\n\n");
 				break;
