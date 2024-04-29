@@ -1,3 +1,5 @@
 abc1 
-ab^^c
-"ab"
+abc1
+1abc
+abc&&
+ab
