@@ -87,10 +87,10 @@ void init_sym_table() {
 }
 
 // 심볼테이블에서 찾고자 하는 값 반환
-int lookup_sym_table(int index_start) {
+int lookup_sym_table(char *str) {
 	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
 		if (sym_table[i][0] != -1) {
-			if (!strcmp(str_pool + sym_table[i][0], str_pool + index_start)) {
+			if (!strcmp(str_pool + sym_table[i][0], str)) {
 				return i;
 			}
 		}
@@ -109,6 +109,48 @@ void print_sym_table() {
 	}
 }
 
+int validate_identifier(const char* str) {
+	// 문자열이 심볼 테이블에 이미 있는지 확인
+	int str_in_table = lookup_sym_table(str);
+	if (str_in_table != -1) {
+		printf("Error - already exists, symbol table info: index {%d} length {%d} (%s)\n", sym_table[str_in_table][0], sym_table[str_in_table][1], str); // 버퍼 내용 화면에 출력
+		return 0;
+	}
+	if (isdigit(str[0])) {
+		printf("Error - start with digit (%s)\n", str);
+		return 0;
+	}
+	if (strlen(str) > MAX_IDENTIFIER_SIZE) {
+		printf("Error - identifier is too long (%s)\n", str);
+		return 0;
+	}
+	for (int i = 0; str[i] != '\0'; i++) {
+		if (!isalnum((unsigned char)str[i]) && str[i] != '_' && !strchr(separators, str[i])) {
+			printf("Error - invalid character (%s)\n", str);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int process_symbol(char* identifier, int index_start, int index) {
+	if (!validate_identifier(identifier)) { // 식별자가 유효한지 체크
+		return 0;
+	}
+
+	sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
+	sym_table[index++][1] = (int)strlen(identifier);
+
+	int hash_value = divisionMethod(identifier, HASH_TABLE_SIZE);
+
+	HTpointer htp = lookup_hash_table(index_start, hash_value);
+	if (htp == NULL) {
+		add_hash_table(index_start, hash_value);
+		printf("%s (Hash: %d)\n", identifier, hash_value); // 버퍼 내용 화면에 출력
+	}
+	return 1;
+}
+
 int main() {
 	FILE* fp;
 	int result;
@@ -116,7 +158,6 @@ int main() {
 	int index_start = 0;
 	int index_next = 0;
 	int index = 0; // 심볼테이블용 변수
-	int hash_value = -1;
 
 	init_sym_table();
 
@@ -132,84 +173,35 @@ int main() {
 			continue;
 		}
 
-		// 구분자를 만나거나 버퍼 크기 제한에 도달했을 때
-		if (index_start < index_next) { // 버퍼에 내용이 있을 때만 출력
-
-			// 입력이 string pool의 크기를 초과할 경우
-			// 마지막 문자열은 제외하도록 처리하고 while문을 빠져나감.
-			if (index_next >= STR_POOL_SIZE) {
-				index_next = index_start; // 버퍼 인덱스 초기화
-				printf("Error - OVERFLOW...\n\n");
-				break;
-			}
-
-			str_pool[index_next] = '\0'; // 문자열 종료
-			// 문자열의 시작 문자가 숫자인지 체크
-			if (str_pool[index_start] >= '0' && str_pool[index_start] <= '9') {
-				printf("Error - start with digit (%s)\n", str_pool + index_start); // 에러 출력
-				index_next = index_start; // 버퍼 인덱스 초기화
-			}
-			// 식별자의 길이가 15자 이내인지 체크
-			else if (index_next - index_start > MAX_IDENTIFIER_SIZE) {
-				printf("Error - maximum length is 15 (%s)\n", str_pool + index_start);
-				index_next = index_start;  // 버퍼 인덱스 초기화
-			}
-			else {
-				// 영어 대소문자, 밑줄, 숫자, 구분자 이외의 문자가 있는지 체크
-				int is_valid = 1;
-				for (int i = index_start; i <= index_next; i++) {
-					if (!isalnum(str_pool[i]) && str_pool[i] != '_' && !strchr(separators, str_pool[i])) { // isalnum: 알파벳이나 숫자면 1을 반환
-						is_valid = 0;
-					}
-				}
-				if (!is_valid) {
-					printf("Error - invalid character in identifier (%s)\n", str_pool + index_start);
-					index_next = index_start; // 버퍼 인덱스 초기화
-				}
-				else {
-					// 문자열이 이미 심볼 테이블에 저장되어있는지 확인
-					int already_exists = lookup_sym_table(index_start);
-					if (already_exists != -1) {
-						printf("%s (Already exists, Symbol Table Info: Index {%d} Length {%d})\n", str_pool + index_start, sym_table[already_exists][0], sym_table[already_exists][1]); // 버퍼 내용 화면에 출력
-						index_start = ++index_next;
-						continue;
-					}
-
-					sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
-					sym_table[index++][1] = (int)strlen(str_pool + index_start); // str_pool의 index_start 위치부터 문자열의 끝까지 길이 계산
-
-					hash_value = divisionMethod(str_pool + index_start, HASH_TABLE_SIZE);
-
-					HTpointer htp = lookup_hash_table(index_start, hash_value);
-					if (htp == NULL) {
-						add_hash_table(index_start, hash_value);
-						printf("%s (Hash: %d)\n", str_pool + index_start, hash_value); // 버퍼 내용 화면에 출력
-					}
-					index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
-				}
-			}
+		// 입력이 string pool의 크기를 초과할 경우
+		// 마지막 문자열은 제외하도록 처리하고 while문을 빠져나감
+		if (index_next >= STR_POOL_SIZE) {
+			index_next = index_start; // 버퍼 인덱스 초기화
+			printf("Error - OVERFLOW...\n\n");
+			break;
 		}
-		if (strchr(separators, c) == NULL) {
-			str_pool[index_next++] = (char)c; // 구분자가 아닌 문자를 버퍼에 저장
+
+		if (index_start < index_next) { // 버퍼에 내용이 있을 때만 출력
+			str_pool[index_next] = '\0'; // 문자열 종료 표시
+
+			char* identifier = str_pool + index_start; // str_pool의 index_start 위치부터 문자열의 끝까지
+			
+			if (process_symbol(identifier, index_start, index++))
+				index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
+			else
+				index_next = index_start;
 		}
 	}
 
 	if (index_start < index_next) { // 마지막 문자열 출력
 		str_pool[index_next] = "\0"; // 문자열 종료
-		sym_table[index][0] = index_start;
-		sym_table[index++][1] = strlen(str_pool + index_start);
 
-		hash_value = divisionMethod(str_pool + index_start, HASH_TABLE_SIZE);
+		char* empty = NULL;
+		char* identifier = str_pool + index_start; // str_pool의 index_start 위치부터 문자열의 끝까지 길이 계산
 
-		HTpointer htp = lookup_hash_table(index_start, hash_value);
-		if (htp == NULL) {
-			add_hash_table(index_start, hash_value);
-			printf("%s (Hash: %d)\n", str_pool + sym_table[index - 1][0], hash_value); // 버퍼 내용 화면에 출력
-		}
-		else {
-			printf("%s (Already exists, Hash: %d)\n", str_pool + sym_table[index - 1][0], hash_value); // 버퍼 내용 화면에 출력
-		}
+		process_symbol(identifier, index_start, index++);
 	}
+	
 
 	print_sym_table();
 	print_hash_table();
