@@ -189,12 +189,18 @@ int main() {
 			if (process_symbol(identifier, index_start, index++))
 				index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
 			else
+			{
+				// string pool에 잘못 입력된 문자열 지우기
+				for (int i = index_start; i <= index_next; i++) {
+					str_pool[i] = '\0';
+				}
 				index_next = index_start;
+			}
 		}
 	}
 
 	if (index_start < index_next) { // 마지막 문자열 출력
-		str_pool[index_next] = "\0"; // 문자열 종료
+		str_pool[index_next] = '\0'; // 문자열 종료
 
 		char* empty = NULL;
 		char* identifier = str_pool + index_start; // str_pool의 index_start 위치부터 문자열의 끝까지 길이 계산
