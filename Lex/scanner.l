@@ -35,13 +35,13 @@
 "="         return(TASSIGN);
    
 [1-9][0-9]*|0([0-7]+|(x|X)[0-9A-Fa-f]*)?    return(TINTEGER);
-[0-9]*"."[0-9]+([eE][+-]?[0-9]+)? { return (TREALNUM); } // report error except for floating point
+[0-9]*"."[0-9]+([eE][+-]?[0-9]+)? 			return (TREALNUM); // report error except for floating point
 
-[0-9]+[A-Za-z_][A-Za-z0-9_]* { printf("Error - start with digit\n"); return (TERROR); }
+[0-9]+[A-Za-z_][A-Za-z0-9_]* 				{ printf("Error - start with digit\n"); return (TERROR); }
 
 [A-Za-z_][A-Za-z0-9_]* {
 	int symbol_num = lookup_sym_table(yytext);
-	if (symbol_num != -1)	{
+	if (symbol_num != -1) { // already in symbol table
 		return(TIDENT);
 	}
 	if (yyleng >= 15) {
@@ -64,12 +64,12 @@
     } 
 }
 
-[^\w \,\.\t\n\r\(\)\{\};]+    { printf("Error - invalid character\n"); return(TERROR); }
+[^\w \,\.\t\n\r\(\)\{\};]+    				{ printf("Error - invalid character\n"); return(TERROR); }
 
-"\n"															return(TNEWLINE);
+"\n"										return(TNEWLINE);
 "/*"([^*]|\*+[^*/])*\**"*/"					;
 "//".*										;
-[ \t]															;
+[ \t]										;
 .                                           return(yytext[0]);
 
 %%
