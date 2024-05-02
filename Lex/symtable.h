@@ -5,5 +5,6 @@
 #define MAX_IDENTIFIER_SIZE 15
 
 int validate_identifier(const char* str);
-int process_symbol(char* identifier, enum tnumber tn);
-int check_overflow();
+void process_symbol(char* identifier, enum tnumber tn);
+int check_strpool_overflow();
+int check_symtable_overflow();
