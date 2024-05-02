@@ -162,7 +162,7 @@ int process_symbol(char* identifier, enum tnumber tn) {
 	return 1;
 }
 
-bool check_overflow() {
+int check_overflow() {
 	if (index_start >= STR_POOL_SIZE) {
 		return true;
 	}
