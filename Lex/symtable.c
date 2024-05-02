@@ -1,20 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "STMain.h"
+#include <stdbool.h>
+#include "symtable.h"
 #include "HashFunc.h"
+#include "tn.h"
 
 // 팀 10 (유서현, 김서현, 이서연)
 
-/*유서현: 입력이 string pool 크기 초과하는 경우 에러 메시지 출력 & 현재까지 입력된 식별자에 대해 정상 출력 처리 (33.3%)
-* 김서현: 식별자 길이 15자 넘어가는 경우 에러 메시지 출력 & 해시 버킷의 비어있는 부분은 출력하지 않으면서 해시 버킷과 심볼 테이블 출력, 중복 식별자 처리 (33.3%)
-* 이서연: 식별자 첫 글자는 숫자가 오는 경우 에러 메시지 출력 & 식별자에 영어 대소문자, _ , 구분자, 숫자 제외한 다른 문자 입력 시 에러 메시지 출력 (33.3%)
-*/
-
 char separators[] = " ,;\t\n\r\n";
 char str_pool[STR_POOL_SIZE];
-int sym_table[SYM_TABLE_SIZE][2];
+int sym_table[SYM_TABLE_SIZE][2];  // str_pool index / symbol lenght / type
 int hash_value = -1;
+
+int index_start = 0;	// str_pool 인덱스
+int symbol_count = 0;	// sym_table 인덱스
 
 typedef struct HTentry* HTpointer;
 typedef struct HTentry {
@@ -79,6 +79,7 @@ void print_hash_table() {
 }
 
 // 심볼 테이블 초기화
+// main.c의 메인함수에서 호출
 void init_sym_table() {
 	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
 		sym_table[i][0] = -1;
@@ -109,6 +110,8 @@ void print_sym_table() {
 	}
 }
 
+// 유효한 identifier인지 체크하는 함수
+// 더이상 사용하지 않음
 int validate_identifier(const char* str) {
 	// 문자열이 심볼 테이블에 이미 있는지 확인
 	int str_in_table = lookup_sym_table(str);
@@ -133,14 +136,19 @@ int validate_identifier(const char* str) {
 	return 1;
 }
 
-int process_symbol(char* identifier, int index_start, int index) {
-	if (!validate_identifier(identifier)) { // 식별자가 유효한지 체크
-		return 0;
+// 식별자를 심볼 테이블과 해시테이블에 기록
+void process_symbol(char* identifier, enum tnumber tn) {
+	// 심볼 테이블 처리 + symbol_count 업데이트
+	sym_table[symbol_count][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
+	sym_table[symbol_count++][1] = (int)strlen(identifier);
+
+	// string pool 처리 + index_start 업데이트
+	for (int i = 0; i < (int)strlen(identifier); i++) {
+		str_pool[index_start++] = identifier[i];
 	}
+	str_pool[index_start++] = '\0'; // 문자열 종료 표시
 
-	sym_table[index][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
-	sym_table[index++][1] = (int)strlen(identifier);
-
+	// 해시 테이블 처리
 	int hash_value = divisionMethod(identifier, HASH_TABLE_SIZE);
 
 	HTpointer htp = lookup_hash_table(index_start, hash_value);
@@ -148,70 +156,19 @@ int process_symbol(char* identifier, int index_start, int index) {
 		add_hash_table(index_start, hash_value);
 		printf("%s (Hash: %d)\n", identifier, hash_value); // 버퍼 내용 화면에 출력
 	}
-	return 1;
 }
 
-int main() {
-	FILE* fp;
-	int result;
-	int c; // 읽은 문자를 저장할 변수
-	int index_start = 0;
-	int index_next = 0;
-	int index = 0; // 심볼테이블용 변수
-
-	init_sym_table();
-
-	result = fopen_s(&fp, "example1_error.txt", "r"); // 파일을 읽기 모드로 열기
-	if (result != 0) {
-		printf("파일 열기 실패(%d)\n", result);
-		return -1;
+// string pool overflow check func
+int check_strpool_overflow() {
+	if (index_start >= STR_POOL_SIZE) {
+		return true;
 	}
-
-	while ((c = fgetc(fp)) != EOF) { // 파일 끝까지 문자 읽기
-		if (strchr(separators, c) == NULL) {
-			str_pool[index_next++] = (char)c; // 버퍼에 문자 저장
-			continue;
-		}
-
-		// 입력이 string pool의 크기를 초과할 경우
-		// 마지막 문자열은 제외하도록 처리하고 while문을 빠져나감
-		if (index_next >= STR_POOL_SIZE) {
-			index_next = index_start; // 버퍼 인덱스 초기화
-			printf("Error - OVERFLOW...\n\n");
-			break;
-		}
-
-		if (index_start < index_next) { // 버퍼에 내용이 있을 때만 출력
-			str_pool[index_next] = '\0'; // 문자열 종료 표시
-
-			char* identifier = str_pool + index_start; // str_pool의 index_start 위치부터 문자열의 끝까지
-			
-			if (process_symbol(identifier, index_start, index++))
-				index_start = ++index_next; // 다음 문자열의 시작 인덱스 설정
-			else
-			{
-				// string pool에 잘못 입력된 문자열 지우기
-				for (int i = index_start; i <= index_next; i++) {
-					str_pool[i] = '\0';
-				}
-				index_next = index_start;
-			}
-		}
+	return false;
+}
+// symbol table overflow check func
+int check_symtable_overflow() {
+	if (symbol_count >= SYM_TABLE_SIZE) {
+		return true;
 	}
-
-	if (index_start < index_next) { // 마지막 문자열 출력
-		str_pool[index_next] = '\0'; // 문자열 종료
-
-		char* empty = NULL;
-		char* identifier = str_pool + index_start; // str_pool의 index_start 위치부터 문자열의 끝까지 길이 계산
-
-		process_symbol(identifier, index_start, index++);
-	}
-	
-
-	print_sym_table();
-	print_hash_table();
-
-	fclose(fp); // 파일 닫기
-	return 0;
+	return false;
 }
