@@ -44,9 +44,13 @@
 [0-9]+[A-Za-z_][A-Za-z0-9_]* { printf("Error - start with digit\n"); return TERROR; }
 
 [A-Za-z_][A-Za-z0-9_]* {
-	if (check_overflow()) {
-		printf("Error - Overflow\n");
-		return TERROR;
+	if (check_overflow()==2) {
+		printf("Error - Strpool_Overflow\n");
+		return (TERROR);
+	}
+	if (check_overflow()==3) {
+		printf("Error - Symtable_Overflow\n");
+		return (TERROR);
 	}
 	int val = validate_identifier(yytext);
 

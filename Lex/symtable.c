@@ -164,7 +164,10 @@ int process_symbol(char* identifier, enum tnumber tn) {
 
 int check_overflow() {
 	if (index_start >= STR_POOL_SIZE) {
-		return true;
+		return 2;
 	}
-	return false;
+	if (symbol_count >= SYM_TABLE_SIZE) {
+		return 3;
+	}
+	return 1;
 }
