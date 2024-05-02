@@ -13,6 +13,7 @@
 "int"		return(TINT);
 "return"	return(TRETURN);
 "void"		return(TVOID);
+"float"     return(TFLOAT);
 "while"		return(TWHILE);
 "=="		return(TEQUAL);
 "!="		return(TNOTEQU);

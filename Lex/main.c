@@ -35,6 +35,7 @@ void main()
 			case TREALNUM: printf("TREALNUM%16s\n", yytext); break;
 			case TPLUS: printf("TPLUS%16s\n", yytext); break;
 			case TMINUS: printf("TMINUS%16s\n", yytext); break;
+			case TFLOAT: printf("TFLOAT%16s\n", yytext); break;
 			case TDOT: printf("TDOT%16s\n", yytext); break;
 			case TCOMA: printf("TCOMA%16s\n", yytext); break;
 			case TASSIGN: printf("TASSIGN%22s\n", yytext); break;
