@@ -35,30 +35,30 @@
 ","         return(TCOMA);
 "="         return(TASSIGN);
    
-[1-9][0-9]*|0([0-7]+|(x|X)[0-9A-Fa-f]*)?	return(TINTEGER);
-[0-9]*"."[0-9]+([eE][+-]?[0-9]+)? { return TREALNUM; }
+[1-9][0-9]*|0([0-7]+|(x|X)[0-9A-Fa-f]*)?    return(TINTEGER);
+[0-9]*"."[0-9]+([eE][+-]?[0-9]+)? { return (TREALNUM); }
 
-[A-Za-z_][A-Za-z0-9_]{14}[A-Za-z0-9_]+ {
-    printf("Error - too long identifier\n");
-    return TERROR;
-}
-[0-9]+[A-Za-z_][A-Za-z0-9_]* { printf("Error - start with digit\n"); return TERROR; }
+[0-9]+[A-Za-z_][A-Za-z0-9_]* { printf("Error - start with digit\n"); return (TERROR); }
 
 [A-Za-z_][A-Za-z0-9_]* {
-	if (check_overflow()==2) {
-		printf("Error - Strpool_Overflow\n");
-		return (TERROR);
-	}
-	if (check_overflow()==3) {
-		printf("Error - Symtable_Overflow\n");
-		return (TERROR);
-	}
-	int val = validate_identifier(yytext);
+    if (yyleng >= 15) {
+        printf("Error - too long identifier\n");
+        return (TERROR);
+    }
+    if (check_overflow()==2) {
+        printf("Error - Strpool_Overflow\n");
+        return (TERROR);
+    }
+    if (check_overflow()==3) {
+        printf("Error - Symtable_Overflow\n");
+        return (TERROR);
+    }
+    int val = validate_identifier(yytext);
 
     if (val == 1) {
-		process_symbol(yytext, TIDENT);
-		return(TIDENT);
-    } 
+        process_symbol(yytext, TIDENT);
+        return (TIDENT);
+    }
 }
 
 [^\w \,\.\t\n\r\(\)\{\};]+    { printf("Error - invalid character\n"); return TERROR; }
@@ -70,8 +70,11 @@
 .                                           return(yytext[0]);
 
 %%
+extern print_sym_table();
+
 int yywrap() 
 {
+    print_sym_table();
 	printf(" End of Lex\n");
 	return 1;
 }
