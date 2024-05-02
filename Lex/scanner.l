@@ -5,7 +5,6 @@
 	#include "symtable.h"
 %}
 
-
 %%
 "const"		return(TCONST);
 "else"		return(TELSE);
@@ -41,6 +40,10 @@
 [0-9]+[A-Za-z_][A-Za-z0-9_]* { printf("Error - start with digit\n"); return (TERROR); }
 
 [A-Za-z_][A-Za-z0-9_]* {
+	int symbol_num = lookup_sym_table(yytext);
+	if (symbol_num != -1)	{
+		return(TIDENT);
+	}
 	if (yyleng >= 15) {
 		printf("Error - too long identifier\n");
 		return (TERROR);
@@ -57,24 +60,22 @@
 
     if (val == 1) {
 		process_symbol(yytext, TIDENT);
-		return (TIDENT);
+		return(TIDENT);
     } 
 }
 
-[^\w \,\.\t\n\r\(\)\{\};]+    { printf("Error - invalid character\n"); return TERROR; }
+[^\w \,\.\t\n\r\(\)\{\};]+    { printf("Error - invalid character\n"); return(TERROR); }
 
-
+"\n"															return(TNEWLINE);
 "/*"([^*]|\*+[^*/])*\**"*/"					;
 "//".*										;
-[ \t\n]										;
+[ \t]															;
 .                                           return(yytext[0]);
 
 %%
-extern print_sym_table();
-
+extern lookup_sym_table(char* str);
 int yywrap() 
 {
-    print_sym_table();  // 심볼 테이블 출력
 	printf(" End of Lex\n");
 	return 1;
 }

@@ -460,3 +460,5 @@ FodyWeavers.xsd
 cmake-build-debug/
 
 CMakeLists.txt
+
+Lex/Solution/Solution.sln
