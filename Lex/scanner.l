@@ -51,7 +51,8 @@
 	int val = validate_identifier(yytext);
 
     if (val == 1) {
-		return TIDENT;
+		process_symbol(yytext, TIDENT);
+		return(TIDENT);
     } 
 }
 
