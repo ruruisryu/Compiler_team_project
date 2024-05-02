@@ -10,7 +10,7 @@
 
 char separators[] = " ,;\t\n\r\n";
 char str_pool[STR_POOL_SIZE];
-int sym_table[SYM_TABLE_SIZE][3];  // str_pool index / symbol lenght / type
+int sym_table[SYM_TABLE_SIZE][2];  // str_pool index / symbol lenght / type
 int hash_value = -1;
 
 int index_start = 0;	// str_pool 인덱스
@@ -79,11 +79,11 @@ void print_hash_table() {
 }
 
 // 심볼 테이블 초기화
+// main.c의 메인함수에서 호출
 void init_sym_table() {
 	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
 		sym_table[i][0] = -1;
 		sym_table[i][1] = -1;
-        sym_table[i][2] = TIDENT;
 	}
 }
 
@@ -110,6 +110,8 @@ void print_sym_table() {
 	}
 }
 
+// 유효한 identifier인지 체크하는 함수
+// 더이상 사용하지 않음
 int validate_identifier(const char* str) {
 	// 문자열이 심볼 테이블에 이미 있는지 확인
 	int str_in_table = lookup_sym_table(str);
@@ -134,16 +136,11 @@ int validate_identifier(const char* str) {
 	return 1;
 }
 
-// 식별자가 유효한지 체크 후, 유효하다면 식별자를 심볼 테이블과 해시테이블에 기록
-int process_symbol(char* identifier, enum tnumber tn) {
-	if (!validate_identifier(identifier)) { // 식별자가 유효한지 체크
-		return 0;
-	}
-
-	// 심볼 테이블 처리
+// 식별자를 심볼 테이블과 해시테이블에 기록
+void process_symbol(char* identifier, enum tnumber tn) {
+	// 심볼 테이블 처리 + symbol_count 업데이트
 	sym_table[symbol_count][0] = index_start; // 현재 처리 중인 문자열의 시작 인덱스를 심볼 테이블에 기록
-	sym_table[symbol_count][1] = (int)strlen(identifier);
-	sym_table[symbol_count++][2] = tn;
+	sym_table[symbol_count++][1] = (int)strlen(identifier);
 
 	// string pool 처리 + index_start 업데이트
 	for (int i = 0; i < (int)strlen(identifier); i++) {
@@ -159,10 +156,9 @@ int process_symbol(char* identifier, enum tnumber tn) {
 		add_hash_table(index_start, hash_value);
 		printf("%s (Hash: %d)\n", identifier, hash_value); // 버퍼 내용 화면에 출력
 	}
-
-	return 1;
 }
 
+// string pool overflow check func
 bool check_strpool_overflow(){
     if (index_start >= STR_POOL_SIZE) {
         return true;
@@ -170,6 +166,7 @@ bool check_strpool_overflow(){
     return false;
 }
 
+// symbol table overflow check func
 bool check_symtable_overflow(){
     if (symbol_count >= SYM_TABLE_SIZE) {
         return true;

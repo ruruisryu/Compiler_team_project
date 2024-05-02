@@ -74,7 +74,7 @@ extern print_sym_table();
 
 int yywrap() 
 {
-    print_sym_table();
+    print_sym_table();  // 심볼 테이블 출력
 	printf(" End of Lex\n");
 	return 1;
 }

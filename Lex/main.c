@@ -8,7 +8,8 @@ extern char *yytext;
 void main()
 {
 	enum tnumber tn; // token number
-    init_sym_table();
+    init_sym_table(); // 심볼테이블 초기화
+
 	printf(" Start of Lex\n");
 	while  ((tn = yylex()) != TEOF) {
 		switch (tn) {
