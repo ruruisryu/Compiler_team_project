@@ -41,14 +41,14 @@ void main()
 			case TIDENT: printf("%d		", LINE_NUMBER); printf("TIDENT %16s", yytext); printf("		       %d\n", lookup_sym_table(yytext)); break;
 			case TNUMBER: printf("%d		", LINE_NUMBER); printf("TNUMBER %15s\n", yytext); break;
 			case TINTEGER: printf("%d		", LINE_NUMBER); printf("TINTEGER %14s\n", yytext); break;
-			case TREALNUM: printf("%d		", LINE_NUMBER); printf("TREALNUM%14s\n", yytext); break;
+			case TREALNUM: printf("%d		", LINE_NUMBER); printf("TREALNUM%15s\n", yytext); break;
 			case TPLUS: printf("%d		", LINE_NUMBER); printf("TPLUS%17s\n", yytext); break;
 			case TMINUS: printf("%d		", LINE_NUMBER); printf("TMINUS%16s\n", yytext); break;
-			case TFLOAT: printf("%d		", LINE_NUMBER); printf("TFLOAT%16s\n", yytext); break;
+			case TFLOAT: printf("%d		", LINE_NUMBER); printf("TFLOAT%17s\n", yytext); break;
 			case TDOT: printf("%d		", LINE_NUMBER); printf("TDOT%18s\n", yytext); break;
-			case TCOMA: printf("%d		", LINE_NUMBER); printf("TCOMA%17s\n", yytext); break;
-			case TASSIGN: printf("%d		", LINE_NUMBER); printf("TASSIGN%15s\n", yytext); break;
-            case TSEMICOLON: printf("%d		", LINE_NUMBER); printf("TSEMICOLON%12s\n", yytext); break;
+			case TCOMA: printf("%d		", LINE_NUMBER); printf("TCOMA%18s\n", yytext); break;
+			case TASSIGN: printf("%d		", LINE_NUMBER); printf("TASSIGN%16s\n", yytext); break;
+            case TSEMICOLON: printf("%d		", LINE_NUMBER); printf("TSEMICOLON%13s\n", yytext); break;
 			case TNEWLINE: LINE_NUMBER++;
 			case TERROR: break;			
 		}
