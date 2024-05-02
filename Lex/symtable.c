@@ -116,7 +116,6 @@ int validate_identifier(const char* str) {
 	// 문자열이 심볼 테이블에 이미 있는지 확인
 	int str_in_table = lookup_sym_table(str);
 	if (str_in_table != -1) {
-		printf("Error - already exists, symbol table info: index {%d} length {%d} (%s)\n", sym_table[str_in_table][0], sym_table[str_in_table][1], str); // 버퍼 내용 화면에 출력
 		return 0;
 	}
 	if (isdigit(str[0])) {
@@ -154,7 +153,6 @@ void process_symbol(char* identifier, enum tnumber tn) {
 	HTpointer htp = lookup_hash_table(index_start, hash_value);
 	if (htp == NULL) {
 		add_hash_table(index_start, hash_value);
-		printf("%s (Hash: %d)\n", identifier, hash_value); // 버퍼 내용 화면에 출력
 	}
 }
 
