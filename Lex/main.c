@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include "tn.h"
 extern yylex();
+extern init_sym_table();
 extern char *yytext;
 
 void main()
 {
 	enum tnumber tn; // token number
+    init_sym_table();
 	printf(" Start of Lex\n");
 	while  ((tn = yylex()) != TEOF) {
 		switch (tn) {

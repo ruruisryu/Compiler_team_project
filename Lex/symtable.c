@@ -83,6 +83,7 @@ void init_sym_table() {
 	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
 		sym_table[i][0] = -1;
 		sym_table[i][1] = -1;
+        sym_table[i][2] = TIDENT;
 	}
 }
 
