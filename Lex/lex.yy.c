@@ -895,7 +895,7 @@ return(TINTEGER);
 case 29:
 YY_RULE_SETUP
 #line 38 "scanner.l"
-{ return (TREALNUM); } // report error except for floating point
+return (TREALNUM); // report error except for floating point
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
@@ -907,21 +907,23 @@ YY_RULE_SETUP
 #line 42 "scanner.l"
 {
 	int symbol_num = lookup_sym_table(yytext);
-	if (symbol_num != -1)	{
+	if (symbol_num != -1) { // already in symbol table
 		return(TIDENT);
 	}
 	if (yyleng >= 15) {
 		printf("Error - too long identifier\n");
 		return (TERROR);
 	}
-	if (check_strpool_overflow()) { // string pool overflow 
+	if (check_strpool_overflow(yytext)) { // string pool overflow 
 		printf("Error - Strpool_Overflow\n"); 
 		return (TERROR);
 	}
 	if (check_symtable_overflow()) { // symboltable overflow
 		printf("Error - Symtable_Overflow\n");
 		return (TERROR);
-	} // because of the collision in hash table, do not include hash table overflow
+	} 
+	// do not include hashtable overflow because it's handled by divisionMethod in HashFunc.h 
+
 	int val = validate_identifier(yytext);
 
     if (val == 1) {
@@ -932,40 +934,40 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 67 "scanner.l"
-{ printf("Error - invalid character\n"); return(TERROR); }
+#line 69 "scanner.l"
+{ printf("Error - illegal identifier\n"); return(TERROR); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 69 "scanner.l"
+#line 71 "scanner.l"
 return(TNEWLINE);
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 70 "scanner.l"
+#line 72 "scanner.l"
 ;
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 71 "scanner.l"
+#line 73 "scanner.l"
 ;
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 72 "scanner.l"
+#line 74 "scanner.l"
 ;
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 73 "scanner.l"
+#line 75 "scanner.l"
 return(yytext[0]);
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 75 "scanner.l"
+#line 77 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 969 "lex.yy.c"
+#line 971 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1851,7 +1853,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 75 "scanner.l"
+#line 77 "scanner.l"
 
 extern lookup_sym_table(char* str);
 int yywrap() 

@@ -48,7 +48,7 @@
 		printf("Error - too long identifier\n");
 		return (TERROR);
 	}
-	if (check_strpool_overflow()) { // string pool overflow 
+	if (check_strpool_overflow(yytext)) { // string pool overflow 
 		printf("Error - Strpool_Overflow\n"); 
 		return (TERROR);
 	}
@@ -56,7 +56,7 @@
 		printf("Error - Symtable_Overflow\n");
 		return (TERROR);
 	} 
-	// do not include hashtable overflow because it's handled by divisionMethod in HashFunc.h 
+	// didn't include hashtable overflow because it's handled by backward method
 
 	int val = validate_identifier(yytext);
 
