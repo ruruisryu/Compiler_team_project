@@ -922,7 +922,7 @@ YY_RULE_SETUP
 		printf("Error - Symtable_Overflow\n");
 		return (TERROR);
 	} 
-	// do not include hashtable overflow because it's handled by divisionMethod in HashFunc.h 
+	// didn't include hashtable overflow because it's handled by backward method
 
 	int val = validate_identifier(yytext);
 
