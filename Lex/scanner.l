@@ -4,36 +4,44 @@
 	#include "tn.h"
 	#include "symtable.h"
 %}
-
+op			[-+*/;+.&><!|=%]
 %%
-"const"		return(TCONST);
-"else"		return(TELSE);
-"if"		return(TIF);
-"int"		return(TINT);
-"return"	return(TRETURN);
-"void"		return(TVOID);
+"const"        return(TCONST);
+"else"        return(TELSE);
+"if"        return(TIF);
+"int"        return(TINT);
+"return"    return(TRETURN);
+"void"        return(TVOID);
 "float"     return(TFLOAT);
-"while"		return(TWHILE);
-"=="		return(TEQUAL);
-"!="		return(TNOTEQU);
-"<="		return(TLESSE);
-">="		return(TGREATE);
-"&&"		return(TAND);
-"||"		return(TOR);
-"++"		return(TINC);
-"--"		return(TDEC);
-"+="		return(TADDASSIGN);
-"-="		return(TSUBASSIGN);
-"*="		return(TMULASSIGN);
-"/="		return(TDIVASSIGN);
-"%="		return(TMODASSIGN);
+"while"        return(TWHILE);
+"=="        return(TEQUAL);
+"!="        return(TNOTEQU);
+"<="        return(TLESSE);
+">="        return(TGREATE);
+"&&"        return(TAND);
+"||"        return(TOR);
+"++"        return(TINC);
+"--"        return(TDEC);
+"+="        return(TADDASSIGN);
+"-="        return(TSUBASSIGN);
+"*="        return(TMULASSIGN);
+"/="        return(TDIVASSIGN);
+"%="        return(TMODASSIGN);
+"/"         return(TDIV);
+"*"         return(TMULTI);
+"<"         return(TLESS);
+">"         return(TMORE);
+"!"         return(TERROR);
+"%"         return(TMOD);
+"|"         return(TERROR);
+"&"         return(TERROR);
 ";"         return(TSEMICOLON);
 "+"         return(TPLUS);
 "-"         return(TMINUS);
 "."         return(TDOT);
 ","         return(TCOMMA);
 "="         return(TASSIGN);
-   
+
 [1-9][0-9]*|0([0-7]+|(x|X)[0-9A-Fa-f]*)?    return(TINTEGER);
 [0-9]*"."[0-9]+([eE][+-]?[0-9]+)? 			return (TREALNUM); // report error except for floating point
 
@@ -66,7 +74,22 @@
     } 
 }
 
-[^\w \,\.\t\n\r\(\)\{\};]+    				{ printf("Error - illegal identifier\n"); return(TERROR); }
+({op}+"=="|"=="{op}+)  |
+({op}+"!="|"!="{op}+)  |
+({op}+"<="|"<="{op}+)  |
+({op}+">="|">="{op}+)  |
+({op}+"&&"|"&&"{op}+)  |
+({op}+"||"|"||"{op}+)  |
+({op}+"++"|"++"{op}+)  |
+({op}+"--"|"--"{op}+)  |
+({op}+"+="|"+="{op}+)  |
+({op}+"-="|"-="{op}+)  |
+({op}+"*="|"*="{op}+)  |
+({op}+"/="|"/="{op}+)  |
+({op}+"%="|"%="{op}+)  { printf("Error - illegal identifier\n"); return(TERROR); }
+
+
+[^\w \&\-\+\=\,\.\t\n\r\(\)\{\};]+   		{ printf("Error - illegal identifier\n"); return(TERROR); }
 
 "\n"										return(TNEWLINE);
 "/*"([^*]|\*+[^*/])*\**"*/"					;

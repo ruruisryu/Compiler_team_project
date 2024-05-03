@@ -46,6 +46,11 @@ void main()
 			case TMINUS: printf("%d		", LINE_NUMBER); printf("TMINUS%16s\n", yytext); break;
 			case TFLOAT: printf("%d		", LINE_NUMBER); printf("TFLOAT%17s\n", yytext); break;
 			case TDOT: printf("%d		", LINE_NUMBER); printf("TDOT%18s\n", yytext); break;
+			case TDIV: printf("%d		", LINE_NUMBER); printf("TDIV%18s\n", yytext); break;
+			case TMULTI: printf("%d		", LINE_NUMBER); printf("TMULTI%16s\n", yytext); break;
+			case TLESS: printf("%d			", LINE_NUMBER); printf("TLESS%17s\n", yytext); break;
+			case TMORE: printf("%d		", LINE_NUMBER); printf("TLESS%17s\n", yytext); break;
+			case TMOD: printf("%d		", LINE_NUMBER); printf("TMOD%18s\n", yytext); break;
 			case TCOMMA: printf("%d		", LINE_NUMBER); printf("TCOMMA%18s\n", yytext); break;
 			case TASSIGN: printf("%d		", LINE_NUMBER); printf("TASSIGN%16s\n", yytext); break;
             case TSEMICOLON: printf("%d		", LINE_NUMBER); printf("TSEMICOLON%13s\n", yytext); break;
