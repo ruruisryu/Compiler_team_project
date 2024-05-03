@@ -31,7 +31,7 @@
 "+"         return(TPLUS);
 "-"         return(TMINUS);
 "."         return(TDOT);
-","         return(TCOMA);
+","         return(TCOMMA);
 "="         return(TASSIGN);
    
 [1-9][0-9]*|0([0-7]+|(x|X)[0-9A-Fa-f]*)?    return(TINTEGER);

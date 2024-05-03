@@ -880,7 +880,7 @@ return(TDOT);
 case 26:
 YY_RULE_SETUP
 #line 34 "scanner.l"
-return(TCOMA);
+return(TCOMMA);
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
