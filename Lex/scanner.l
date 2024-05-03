@@ -55,7 +55,9 @@
 	if (check_symtable_overflow()) { // symboltable overflow
 		printf("Error - Symtable_Overflow\n");
 		return (TERROR);
-	} // because of the collision in hash table, do not include hash table overflow
+	} 
+	// do not include hashtable overflow because it's handled by divisionMethod in HashFunc.h 
+
 	int val = validate_identifier(yytext);
 
     if (val == 1) {
@@ -64,7 +66,7 @@
     } 
 }
 
-[^\w \,\.\t\n\r\(\)\{\};]+    				{ printf("Error - invalid character\n"); return(TERROR); }
+[^\w \,\.\t\n\r\(\)\{\};]+    				{ printf("Error - illegal identifier\n"); return(TERROR); }
 
 "\n"										return(TNEWLINE);
 "/*"([^*]|\*+[^*/])*\**"*/"					;
