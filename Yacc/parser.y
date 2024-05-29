@@ -15,28 +15,32 @@ void semantic(int);
 %nonassoc LOWER_THAN_ELSE
 %nonassoc TELSE
 
-%left TLPAREN TINT TCONST TFLOAT TVOID TRPAREN TSEMI
-
 %%
-//%right TLPAREN TRPAREN TINT TCONST TFLOAT TVOID
 mini_c                      : translation_unit                          { semantic(1); };
 translation_unit            : external_dcl                              { semantic(2); }
                             | translation_unit external_dcl             { semantic(3); };
 external_dcl                : function_def                              { semantic(4); }
-                            | type_function_header                      { semantic(4); }
+                            | type_only_function_def                    { semantic(4); }
                             | declaration                               { semantic(5); };
 function_def                : function_header compound_st               { semantic(6); };
 function_header             : dcl_spec function_name formal_param       { semantic(7); };
-
-type_function_header        : dcl_spec function_name type_param TSEMI   { semantic(7); }
-                            | dcl_spec function_name formal_param TSEMI { semantic(7); };
-type_param                  : TLPAREN opt_type_param TRPAREN            { semantic(17); };
-opt_type_param              : type_param_list                           { semantic(18); };
-type_param_list             : type_param_dcl                            { semantic(20); }
-                            | type_param_list TCOMMA type_param_dcl     { semantic(21); }
-                            | type_param_list TCOMMA param_dcl          { semantic(21); };
-type_param_dcl              : dcl_spec                                  { semantic(22); };
+// function: void main(int x) / type_only_function: void main(int) / type_skip_function: main(int)
+type_only_function_def      : type_only_function_header TSEMI
+                            | type_only_function_header TCOMMA type_skip_function_list TSEMI
+type_skip_function_list     : type_skip_function_header
+                            | type_skip_function_list TCOMMA type_skip_function_header
+type_skip_function_header   : function_name type_only_param             { semantic(7); }
+                            | function_name formal_param                { semantic(7); };
                             
+type_only_function_header   : dcl_spec function_name type_only_param    { semantic(7); }
+                            | dcl_spec function_name formal_param       { semantic(7); };
+type_only_param             : TLPAREN type_only_param_list TRPAREN      { semantic(17); };
+type_only_param_list        : type_only_param_dcl                       { semantic(20); }
+                            | type_only_param_list TCOMMA type_only_param_dcl     { semantic(21); }
+                            | type_only_param_list TCOMMA param_dcl               { semantic(21); }
+                            | formal_param_list TCOMMA type_only_param_dcl        { semantic(21); };
+type_only_param_dcl         : dcl_specifier                             { semantic(22); };
+//
 dcl_spec                    : dcl_specifiers                            { semantic(8); };
 dcl_specifiers              : dcl_specifier                             { semantic(9); }
                             | dcl_specifiers dcl_specifier              { semantic(10); };
@@ -51,7 +55,7 @@ opt_formal_param            : formal_param_list                         { semant
                             |                                           { semantic(19); };
 formal_param_list           : param_dcl                                 { semantic(20); }
                             | formal_param_list TCOMMA param_dcl        { semantic(21); };
-param_dcl                   : dcl_spec declarator                       { semantic(22); };
+param_dcl                   : dcl_specifier declarator                  { semantic(22); };
 compound_st                 : TLBRACE opt_dcl_list opt_stat_list TRBRACE { semantic(23); };
 opt_dcl_list                : declaration_list                          { semantic(24); }
                             |                                           { semantic(25); };
