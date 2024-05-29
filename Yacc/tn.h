@@ -48,7 +48,6 @@
 #define	TSEMI	302
 #define	LOWER_THAN_ELSE	303
 
-
 extern YYSTYPE yylval;
 
 enum errorTypes { noerror, illid_digit, illid_long, illch, real_num, overst };
