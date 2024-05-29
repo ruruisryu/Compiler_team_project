@@ -157,16 +157,16 @@ void process_symbol(char* identifier, enum tnumber tn) {
 }
 
 // string pool overflow check func
-int check_strpool_overflow() {
-	if (index_start >= STR_POOL_SIZE) {
-		return true;
+int check_strpool_overflow(char* identifier) {
+	if (index_start + (int)strlen(identifier) >= STR_POOL_SIZE) {
+		return 1;
 	}
-	return false;
+	return 0;
 }
 // symbol table overflow check func
 int check_symtable_overflow() {
 	if (symbol_count >= SYM_TABLE_SIZE) {
-		return true;
+		return 1;
 	}
-	return false;
+	return 0;
 }
