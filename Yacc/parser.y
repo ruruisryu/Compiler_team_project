@@ -28,7 +28,8 @@ external_dcl                : function_def                              { semant
 function_def                : function_header compound_st               { semantic(6); };
 function_header             : dcl_spec function_name formal_param       { semantic(7); };
 
-type_function_header        : dcl_spec function_name type_param TSEMI   { semantic(7); };
+type_function_header        : dcl_spec function_name type_param TSEMI   { semantic(7); }
+                            | dcl_spec function_name formal_param TSEMI { semantic(7); };
 type_param                  : TLPAREN opt_type_param TRPAREN            { semantic(17); };
 opt_type_param              : type_param_list                           { semantic(18); };
 type_param_list             : type_param_dcl                            { semantic(20); }
