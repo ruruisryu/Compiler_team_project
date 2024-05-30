@@ -23,9 +23,9 @@ external_dcl               : function_def                                       
                            | declaration                                                     { semantic(5); };
 function_def               : function_header compound_st                                     { semantic(6); };
 function_header            : dcl_spec function_name formal_param                             { semantic(7); };
-// function_definition: int main(int x, int y) {} / prototype_function: int main(int x, int);
+// function_definition: int main(int x, int y) {} / function_prototype: int main(int x, int);
 // formal_param: (int x, float y)                 / type_only_param: (int, float)
-prototype_function         : function_name type_only_param                                   { semantic(7); }
+function_prototype         : function_name type_only_param                                   { semantic(7); }
                            | function_name formal_param                                      { semantic(7); };
 type_only_param            : TLPAREN type_only_param_list TRPAREN                            { semantic(17); };
 type_only_param_list       : type_only_param_dcl                                             { semantic(20); }
@@ -50,7 +50,7 @@ opt_formal_param           : formal_param_list                                  
 formal_param_list          : param_dcl                                                       { semantic(20); }
                            | formal_param_list TCOMMA param_dcl                              { semantic(21); };
 param_dcl                  : dcl_specifier declarator                                        { semantic(22); }
-                           | dcl_specifier prototype_function                                ;
+                           | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE opt_dcl_list opt_stat_list TRBRACE                      { semantic(23); };
 opt_dcl_list               : declaration_list                                                { semantic(24); }
                            |                                                                 { semantic(25); };
@@ -62,7 +62,7 @@ init_dcl_list              : init_declarator                                    
 init_declarator            : declarator                                                      { semantic(31); }
                            | declarator TASSIGN TNUMBER                                      { semantic(32); }
                            | declarator TASSIGN TFNUMBER               
-                           | prototype_function                                              ;
+                           | function_prototype                                              ;
 declarator                 : TIDENT                                                          { semantic(33); }
                            | TIDENT TLBRACKET opt_number TRBRACKET                           { semantic(34); }; // 배열 선언
 opt_number                 : TNUMBER                                                         { semantic(35); }

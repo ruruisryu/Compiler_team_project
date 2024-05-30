@@ -106,15 +106,3 @@ void main()
 	print_hash_table();
 	printf("end of parser\n");
 }
-//int a = 0, write(int x), read(int, float), c = 0;
-//int a=0, write(int x), read(x, y), c=0;
-//// int a = 0, int write(int x);
-//int main(x) {
-//	int y = x;
-//}
-//
-////int a, int b;
-////int a, float b;
-read(x, y);
-read(int);
-int read(x);
