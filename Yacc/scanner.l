@@ -1,5 +1,6 @@
 %{
 #include "tn.h"
+#include <stdlib.h>  
 %}
 
 letter	[a-zA-Z_]
