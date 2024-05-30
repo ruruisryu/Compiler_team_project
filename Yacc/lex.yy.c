@@ -881,7 +881,7 @@ YY_RULE_SETUP
                                         			if(yytext[i] == '\n')
                                             			lineNumber++;
                                     			}
-                                    			return(TCOMMENT);
+                                    			printf("%-20d %-20s %-20s\n", lineNumber, "TCOMMENT", yytext);  
                                 		} 
 	YY_BREAK
 case 40:
@@ -889,7 +889,7 @@ YY_RULE_SETUP
 #line 56 "scanner.l"
 {
                                     			startLineNumber = lineNumber; 
-                                    			return(TCOMMENT);
+                                    			printf("%-20d %-20s %-20s\n", lineNumber, "TCOMMENT", yytext);  
                                 		}
 	YY_BREAK
 case 41:
@@ -926,7 +926,7 @@ YY_RULE_SETUP
 case 45:
 YY_RULE_SETUP
 #line 75 "scanner.l"
-lineNumber++;
+lineNumber++; printf("lineNumber: %d\n", lineNumber);
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
@@ -1834,4 +1834,6 @@ int main()
 #endif
 #line 81 "scanner.l"
 
-
+int yywrap() {
+	return 1;
+}
