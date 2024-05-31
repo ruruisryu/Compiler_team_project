@@ -44,6 +44,7 @@ type_specifier             : TINT                                               
                            | TFLOAT  
                            | TVOID                                                           { semantic(15); };
 function_name              : TIDENT                                                          { semantic(16); };
+                           | TERROR
 formal_param               : TLPAREN opt_formal_param TRPAREN                                { semantic(17); };
 opt_formal_param           : formal_param_list                                               { semantic(18); }
                            |                                                                 { semantic(19); };
@@ -64,7 +65,9 @@ init_declarator            : declarator                                         
                            | declarator TASSIGN TFNUMBER               
                            | function_prototype                                              ;
 declarator                 : TIDENT                                                          { semantic(33); }
+                           | TERROR
                            | TIDENT TLBRACKET opt_number TRBRACKET                           { semantic(34); }; // 배열 선언
+                           | TERROR TLBRACKET opt_number TRBRACKET 
 opt_number                 : TNUMBER                                                         { semantic(35); }
                            |                                                                 { semantic(36); };
 opt_stat_list              : statement_list                                                  { semantic(37); }
@@ -128,9 +131,11 @@ actual_param               : actual_param_list                                  
 actual_param_list          : assignment_exp                                                  { semantic(93); }
                            | actual_param_list TCOMMA assignment_exp                         { semantic(94); };
 primary_exp                : TIDENT                                                          { semantic(95); }
+                           | TERROR
                            | TNUMBER                                                         { semantic(96); }                                  
                            | TLPAREN expression TRPAREN                                      { semantic(97); };
 %%  
+
 void semantic(int n)
 {
    printf("reduced rule number = %d\n", n);

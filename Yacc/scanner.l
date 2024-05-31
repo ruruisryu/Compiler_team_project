@@ -7,14 +7,14 @@ letter	[a-zA-Z_]
 digit	[0-9]
 
 %%
-"const"					return(TCONST);
+"const"							return(TCONST);
 "int"			        		return(TINT);
-"float"					return(TFLOAT);
+"float"							return(TFLOAT);
 "return"			    		return(TRETURN);
 "void"		            		return(TVOID);
-"while"		        		return(TWHILE);
-"if"	                    			return(TIF);
-"else"						return(TELSE);
+"while"		        			return(TWHILE);
+"if"	                    	return(TIF);
+"else"							return(TELSE);
 "+"             				return(TADD);
 "-"             				return(TSUB);
 "*"             				return(TMUL);
@@ -22,29 +22,29 @@ digit	[0-9]
 "%"             				return(TMOD);
 "!"             				return(TNOT);
 "&&"            				return(TAND);
-"||"            					return(TOR);
-"=="						return(TEQUAL);
-"!="						return(TNOTEQU);
-"<="						return(TLESSE);
-">="						return(TGREATE);
+"||"            				return(TOR);
+"=="							return(TEQUAL);
+"!="							return(TNOTEQU);
+"<="							return(TLESSE);
+">="							return(TGREATE);
 "<"             				return(TLESS);
 ">"             				return(TGREAT);
-"++"						return(TINC);
-"--"						return(TDEC);
+"++"							return(TINC);
+"--"							return(TDEC);
 "="             				return(TASSIGN);
-"+="						return(TADDASSIGN);
-"-="						return(TSUBASSIGN);
-"*="						return(TMULASSIGN);
-"/="						return(TDIVASSIGN);
-"%="						return(TMODASSIGN);
+"+="							return(TADDASSIGN);
+"-="							return(TSUBASSIGN);
+"*="							return(TMULASSIGN);
+"/="							return(TDIVASSIGN);
+"%="							return(TMODASSIGN);
 "("             				return(TLPAREN);
 ")"             				return(TRPAREN);
 "{"             				return(TLBRACE);
 "}"             				return(TRBRACE);
-","						return(TCOMMA);
-"["						return(TLBRACKET);
-"]"						return(TRBRACKET);
-";"						return(TSEMI);
+","								return(TCOMMA);
+"["								return(TLBRACKET);
+"]"								return(TRBRACKET);
+";"								return(TSEMI);
 "/*"([^*]|"*"+[^*/])*"*"+"/"    		{
                                     			startLineNumber = lineNumber;
                                     			for(int i = 0; i<yyleng; i++)
@@ -79,6 +79,8 @@ digit	[0-9]
 							ReportError(illch);
 							return(TERROR);
 						} 
+
+						
 %%
 int yywrap() {
 	return 1;
