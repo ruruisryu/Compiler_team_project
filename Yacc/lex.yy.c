@@ -445,7 +445,8 @@ char *yytext;
 #define INITIAL 0
 #line 2 "scanner.l"
 #include "tn.h"
-#line 449 "lex.yy.c"
+#include <stdlib.h>  
+#line 450 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -596,9 +597,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 8 "scanner.l"
+#line 9 "scanner.l"
 
-#line 602 "lex.yy.c"
+#line 603 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -683,197 +684,197 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 9 "scanner.l"
+#line 10 "scanner.l"
 return(TCONST);
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 10 "scanner.l"
+#line 11 "scanner.l"
 return(TINT);
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 11 "scanner.l"
+#line 12 "scanner.l"
 return(TFLOAT);
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 12 "scanner.l"
+#line 13 "scanner.l"
 return(TRETURN);
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 13 "scanner.l"
+#line 14 "scanner.l"
 return(TVOID);
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 14 "scanner.l"
+#line 15 "scanner.l"
 return(TWHILE);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 15 "scanner.l"
+#line 16 "scanner.l"
 return(TIF);
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 16 "scanner.l"
+#line 17 "scanner.l"
 return(TELSE);
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 17 "scanner.l"
+#line 18 "scanner.l"
 return(TADD);
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 18 "scanner.l"
+#line 19 "scanner.l"
 return(TSUB);
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 19 "scanner.l"
+#line 20 "scanner.l"
 return(TMUL);
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 20 "scanner.l"
+#line 21 "scanner.l"
 return(TDIV);
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 21 "scanner.l"
+#line 22 "scanner.l"
 return(TMOD);
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 22 "scanner.l"
+#line 23 "scanner.l"
 return(TNOT);
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 23 "scanner.l"
+#line 24 "scanner.l"
 return(TAND);
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 24 "scanner.l"
+#line 25 "scanner.l"
 return(TOR);
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 25 "scanner.l"
+#line 26 "scanner.l"
 return(TEQUAL);
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 26 "scanner.l"
+#line 27 "scanner.l"
 return(TNOTEQU);
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 27 "scanner.l"
+#line 28 "scanner.l"
 return(TLESSE);
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 28 "scanner.l"
+#line 29 "scanner.l"
 return(TGREATE);
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 29 "scanner.l"
+#line 30 "scanner.l"
 return(TLESS);
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 30 "scanner.l"
+#line 31 "scanner.l"
 return(TGREAT);
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 31 "scanner.l"
+#line 32 "scanner.l"
 return(TINC);
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 32 "scanner.l"
+#line 33 "scanner.l"
 return(TDEC);
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 33 "scanner.l"
+#line 34 "scanner.l"
 return(TASSIGN);
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 34 "scanner.l"
+#line 35 "scanner.l"
 return(TADDASSIGN);
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 35 "scanner.l"
+#line 36 "scanner.l"
 return(TSUBASSIGN);
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 36 "scanner.l"
+#line 37 "scanner.l"
 return(TMULASSIGN);
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 37 "scanner.l"
+#line 38 "scanner.l"
 return(TDIVASSIGN);
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 38 "scanner.l"
+#line 39 "scanner.l"
 return(TMODASSIGN);
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 39 "scanner.l"
+#line 40 "scanner.l"
 return(TLPAREN);
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 40 "scanner.l"
+#line 41 "scanner.l"
 return(TRPAREN);
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 41 "scanner.l"
+#line 42 "scanner.l"
 return(TLBRACE);
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 42 "scanner.l"
+#line 43 "scanner.l"
 return(TRBRACE);
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 43 "scanner.l"
+#line 44 "scanner.l"
 return(TCOMMA);
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 44 "scanner.l"
+#line 45 "scanner.l"
 return(TLBRACKET);
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 45 "scanner.l"
+#line 46 "scanner.l"
 return(TRBRACKET);
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 46 "scanner.l"
+#line 47 "scanner.l"
 return(TSEMI);
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 47 "scanner.l"
+#line 48 "scanner.l"
 {
                                     			startLineNumber = lineNumber;
                                     			for(int i = 0; i<yyleng; i++)
@@ -886,7 +887,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 56 "scanner.l"
+#line 57 "scanner.l"
 {
                                     			startLineNumber = lineNumber; 
                                     			printf("%-20d %-20s %-20s\n", lineNumber, "TCOMMENT", yytext);  
@@ -894,7 +895,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 60 "scanner.l"
+#line 61 "scanner.l"
 {
     							if(yyleng >= 15)
     							{
@@ -907,17 +908,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 69 "scanner.l"
+#line 70 "scanner.l"
 return(TNUMBER); //정수 상수
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 70 "scanner.l"
+#line 71 "scanner.l"
 return(TFNUMBER); //실수 상수
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 71 "scanner.l"
+#line 72 "scanner.l"
 {
 							ReportError(illid_digit); 
 							return(TERROR);
@@ -925,17 +926,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 75 "scanner.l"
+#line 76 "scanner.l"
 lineNumber++; printf("lineNumber: %d\n", lineNumber);
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 76 "scanner.l"
+#line 77 "scanner.l"
 ;
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 77 "scanner.l"
+#line 78 "scanner.l"
 { 
 							ReportError(illch);
 							return(TERROR);
@@ -943,10 +944,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 81 "scanner.l"
+#line 82 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 950 "lex.yy.c"
+#line 951 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1832,7 +1833,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 81 "scanner.l"
+#line 82 "scanner.l"
 
 int yywrap() {
 	return 1;

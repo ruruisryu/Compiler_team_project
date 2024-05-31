@@ -18,8 +18,8 @@ rule 4    external_dcl -> function_def
 rule 5    external_dcl -> declaration
 rule 6    function_def -> function_header compound_st
 rule 7    function_header -> dcl_spec function_name formal_param
-rule 8    type_skip_function_header -> function_name type_only_param
-rule 9    type_skip_function_header -> function_name formal_param
+rule 8    function_prototype -> function_name type_only_param
+rule 9    function_prototype -> function_name formal_param
 rule 10   type_only_param -> TLPAREN type_only_param_list TRPAREN
 rule 11   type_only_param_list -> type_only_param_dcl
 rule 12   type_only_param_list -> type_only_param_list TCOMMA type_only_param_dcl
@@ -42,7 +42,7 @@ rule 28   opt_formal_param ->		/* empty */
 rule 29   formal_param_list -> param_dcl
 rule 30   formal_param_list -> formal_param_list TCOMMA param_dcl
 rule 31   param_dcl -> dcl_specifier declarator
-rule 32   param_dcl -> dcl_specifier type_skip_function_header
+rule 32   param_dcl -> dcl_specifier function_prototype
 rule 33   compound_st -> TLBRACE opt_dcl_list opt_stat_list TRBRACE
 rule 34   opt_dcl_list -> declaration_list
 rule 35   opt_dcl_list ->		/* empty */
@@ -54,7 +54,7 @@ rule 40   init_dcl_list -> init_dcl_list TCOMMA init_declarator
 rule 41   init_declarator -> declarator
 rule 42   init_declarator -> declarator TASSIGN TNUMBER
 rule 43   init_declarator -> declarator TASSIGN TFNUMBER
-rule 44   init_declarator -> type_skip_function_header
+rule 44   init_declarator -> function_prototype
 rule 45   declarator -> TIDENT
 rule 46   declarator -> TIDENT TLBRACKET opt_number TRBRACKET
 rule 47   opt_number -> TNUMBER
@@ -184,7 +184,7 @@ function_def (52)
     on left: 6, on right: 4
 function_header (53)
     on left: 7, on right: 6
-type_skip_function_header (54)
+function_prototype (54)
     on left: 8 9, on right: 32 44
 type_only_param (55)
     on left: 10, on right: 8
@@ -386,7 +386,7 @@ state 9
 
     TIDENT	shift, and go to state 18
 
-    type_skip_function_header	go to state 19
+    function_prototype	go to state 19
     function_name	go to state 20
     init_dcl_list	go to state 21
     init_declarator	go to state 22
@@ -497,7 +497,7 @@ state 18
 
 state 19
 
-    init_declarator  ->  type_skip_function_header .   (rule 44)
+    init_declarator  ->  function_prototype .   (rule 44)
 
     $default	reduce using rule 44 (init_declarator)
 
@@ -506,8 +506,8 @@ state 19
 state 20
 
     function_header  ->  dcl_spec function_name . formal_param   (rule 7)
-    type_skip_function_header  ->  function_name . type_only_param   (rule 8)
-    type_skip_function_header  ->  function_name . formal_param   (rule 9)
+    function_prototype  ->  function_name . type_only_param   (rule 8)
+    function_prototype  ->  function_name . formal_param   (rule 9)
 
     TLPAREN	shift, and go to state 30
 
@@ -560,7 +560,7 @@ state 25
 
     TIDENT	shift, and go to state 18
 
-    type_skip_function_header	go to state 19
+    function_prototype	go to state 19
     function_name	go to state 36
     init_dcl_list	go to state 21
     init_declarator	go to state 22
@@ -676,19 +676,19 @@ state 30
 
 state 31
 
-    type_skip_function_header  ->  function_name type_only_param .   (rule 8)
+    function_prototype  ->  function_name type_only_param .   (rule 8)
 
-    $default	reduce using rule 8 (type_skip_function_header)
+    $default	reduce using rule 8 (function_prototype)
 
 
 
 state 32
 
     function_header  ->  dcl_spec function_name formal_param .   (rule 7)
-    type_skip_function_header  ->  function_name formal_param .   (rule 9)
+    function_prototype  ->  function_name formal_param .   (rule 9)
 
     TLBRACE	reduce using rule 7 (function_header)
-    $default	reduce using rule 9 (type_skip_function_header)
+    $default	reduce using rule 9 (function_prototype)
 
 
 
@@ -698,7 +698,7 @@ state 33
 
     TIDENT	shift, and go to state 18
 
-    type_skip_function_header	go to state 19
+    function_prototype	go to state 19
     function_name	go to state 36
     init_declarator	go to state 76
     declarator	go to state 23
@@ -725,8 +725,8 @@ state 35
 
 state 36
 
-    type_skip_function_header  ->  function_name . type_only_param   (rule 8)
-    type_skip_function_header  ->  function_name . formal_param   (rule 9)
+    function_prototype  ->  function_name . type_only_param   (rule 8)
+    function_prototype  ->  function_name . formal_param   (rule 9)
 
     TLPAREN	shift, and go to state 30
 
@@ -1189,13 +1189,13 @@ state 72
 
     type_only_param_dcl  ->  dcl_specifier .   (rule 15)
     param_dcl  ->  dcl_specifier . declarator   (rule 31)
-    param_dcl  ->  dcl_specifier . type_skip_function_header   (rule 32)
+    param_dcl  ->  dcl_specifier . function_prototype   (rule 32)
 
     TIDENT	shift, and go to state 18
 
     $default	reduce using rule 15 (type_only_param_dcl)
 
-    type_skip_function_header	go to state 117
+    function_prototype	go to state 117
     function_name	go to state 36
     declarator	go to state 118
 
@@ -1255,9 +1255,9 @@ state 78
 
 state 79
 
-    type_skip_function_header  ->  function_name formal_param .   (rule 9)
+    function_prototype  ->  function_name formal_param .   (rule 9)
 
-    $default	reduce using rule 9 (type_skip_function_header)
+    $default	reduce using rule 9 (function_prototype)
 
 
 
@@ -1903,7 +1903,7 @@ state 116
 
 state 117
 
-    param_dcl  ->  dcl_specifier type_skip_function_header .   (rule 32)
+    param_dcl  ->  dcl_specifier function_prototype .   (rule 32)
 
     $default	reduce using rule 32 (param_dcl)
 
