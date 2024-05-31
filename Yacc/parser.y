@@ -3,8 +3,9 @@
 #include <ctype.h>
 #include <malloc.h>
 
+extern int lineNumber;
 extern void semantic(int);
-extern void ReportParserError(char* message);
+extern void ReportParserError(char* message, int lineNumber);
 %}
 
 %token TIDENT TNUMBER TCONST TELSE TIF	TEIF TINT TRETURN TVOID TWHILE
@@ -23,14 +24,14 @@ translation_unit           : external_dcl                                       
 external_dcl               : function_def                                                    { semantic(4); }
                            | declaration                                                     { semantic(5); };
 function_def               : function_header compound_st                                     { semantic(6); }
-                           | error compound_st                                               { yyerrok; ReportParserError("function_def"); };
+                           | error compound_st                                               { yyerrok; ReportParserError("function_def", lineNumber); };
 function_header            : dcl_spec function_name formal_param                             { semantic(7); };
 // function_definition: int main(int x, int y) {} / function_prototype: int main(int x, int);
 // formal_param: (int x, float y)                 / type_only_param: (int, float)
 function_prototype         : function_name type_only_param                                   { semantic(7); }
                            | function_name formal_param                                      { semantic(7); };
 type_only_param            : TLPAREN type_only_param_list TRPAREN                            { semantic(17); }
-                           | TLPAREN type_only_param_list error                              { yyerrok; ReportParserError("type_only_param"); };
+                           | TLPAREN type_only_param_list error                              { yyerrok; ReportParserError("type_only_param", lineNumber); };
 type_only_param_list       : type_only_param_dcl                                             { semantic(20); }
                            | type_only_param_list TCOMMA type_only_param_dcl                 { semantic(21); }
                            | type_only_param_list TCOMMA param_dcl                           { semantic(21); }
@@ -48,7 +49,7 @@ type_specifier             : TINT                                               
                            | TVOID                                                           { semantic(15); };
 function_name              : TIDENT                                                          { semantic(16); };
 formal_param               : TLPAREN opt_formal_param TRPAREN                                { semantic(17); }
-                           | TLPAREN opt_formal_param error                                  { yyerrok; ReportParserError("formal_param"); };
+                           | TLPAREN opt_formal_param error                                  { yyerrok; ReportParserError("formal_param", lineNumber); };
 opt_formal_param           : formal_param_list                                               { semantic(18); }
                            |                                                                 { semantic(19); };
 formal_param_list          : param_dcl                                                       { semantic(20); }
@@ -56,23 +57,23 @@ formal_param_list          : param_dcl                                          
 param_dcl                  : dcl_specifier declarator                                        { semantic(22); }
                            | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE opt_dcl_list opt_stat_list TRBRACE                      { semantic(23); }
-                           | TLBRACE opt_dcl_list opt_stat_list error                        { yyerrok; ReportParserError("compound_st MISSING RBRACE"); };
+                           | TLBRACE opt_dcl_list opt_stat_list error                        { yyerrok; ReportParserError("compound_st MISSING RBRACE", lineNumber); };
 opt_dcl_list               : declaration_list                                                { semantic(24); }
                            |                                                                 { semantic(25); };
 declaration_list           : declaration                                                     { semantic(26); }
                            | declaration_list declaration                                    { semantic(27); };
 declaration                : dcl_spec init_dcl_list TSEMI                                    { semantic(28); }
-                           | dcl_spec init_dcl_list error                                    { yyerrok; ReportParserError("declaration MISSING SEMI"); };
+                           | dcl_spec init_dcl_list error                                    { yyerrok; ReportParserError("declaration MISSING SEMI", lineNumber); };
 init_dcl_list              : init_declarator                                                 { semantic(29); }
                            | init_dcl_list TCOMMA init_declarator                            { semantic(30); };
 init_declarator            : declarator                                                      { semantic(31); }
                            | declarator TASSIGN TNUMBER                                      { semantic(32); }
                            | declarator TASSIGN TFNUMBER            
-                           | declarator TASSIGN error                                        { yyerrok; ReportParserError("init_declarator"); };
+                           | declarator TASSIGN error                                        { yyerrok; ReportParserError("init_declarator", lineNumber); };
                            | function_prototype                                              ;
 declarator                 : TIDENT                                                          { semantic(33); }
                            | TIDENT TLBRACKET opt_number TRBRACKET                           { semantic(34); }; // 배열 선언
-                           | TIDENT TLBRACKET opt_number error                               { yyerrok; ReportParserError("declarator MISSING RBRAKET"); };   
+                           | TIDENT TLBRACKET opt_number error                               { yyerrok; ReportParserError("declarator MISSING RBRAKET", lineNumber); };   
 opt_number                 : TNUMBER                                                         { semantic(35); }
                            |                                                                 { semantic(36); };
 opt_stat_list              : statement_list                                                  { semantic(37); }
@@ -90,13 +91,13 @@ opt_expression             : expression                                         
                            |                                                                 { semantic(48); };
 if_st                      : TIF TLPAREN expression TRPAREN statement %prec LOWER_THAN_ELSE  { semantic(49); }
                            | TIF TLPAREN expression TRPAREN statement TELSE statement        { semantic(50); }
-                           | TIF TLPAREN expression error statement                          { yyerrok; ReportParserError("if_st MISSING RPAREN"); }
-                           | TIF error expression TRPAREN statement                          { yyerrok; ReportParserError("if_st MISSING LPAREN"); };
+                           | TIF TLPAREN expression error statement                          { yyerrok; ReportParserError("if_st MISSING RPAREN", lineNumber); }
+                           | TIF error expression TRPAREN statement                          { yyerrok; ReportParserError("if_st MISSING LPAREN", lineNumber); };
 while_st                   : TWHILE TLPAREN expression TRPAREN statement                     { semantic(51); }
-                           | TWHILE TLPAREN expression error statement                       { yyerrok; ReportParserError("while_st MISSING RPAREN"); }
-                           | TWHILE error expression TRPAREN statement                       { yyerrok; ReportParserError("while_st MISSING LPAREN"); };
+                           | TWHILE TLPAREN expression error statement                       { yyerrok; ReportParserError("while_st MISSING RPAREN", lineNumber); }
+                           | TWHILE error expression TRPAREN statement                       { yyerrok; ReportParserError("while_st MISSING LPAREN", lineNumber); };
 return_st                  : TRETURN opt_expression TSEMI                                    { semantic(52); }
-                           | TRETURN opt_expression error                                    { yyerrok; ReportParserError("return_st MISSING SEMI"); };
+                           | TRETURN opt_expression error                                    { yyerrok; ReportParserError("return_st MISSING SEMI", lineNumber); };
 expression                 : assignment_exp                                                  { semantic(53); };
 assignment_exp             : logical_or_exp                                                  { semantic(54); }
                            | unary_exp TASSIGN assignment_exp                                { semantic(55); }
@@ -105,12 +106,12 @@ assignment_exp             : logical_or_exp                                     
                            | unary_exp TMULASSIGN assignment_exp                             { semantic(58); }
                            | unary_exp TDIVASSIGN assignment_exp                             { semantic(59); }
                            | unary_exp TMODASSIGN assignment_exp                             { semantic(60); }
-                           | unary_exp TASSIGN error                                         { yyerrok; ReportParserError("assignment_exp"); }
-                           | unary_exp TADDASSIGN error                                      { yyerrok; ReportParserError("assignment_exp"); }
-                           | unary_exp TSUBASSIGN error                                      { yyerrok; ReportParserError("assignment_exp"); }
-                           | unary_exp TMULASSIGN error                                      { yyerrok; ReportParserError("assignment_exp"); }
-                           | unary_exp TDIVASSIGN error                                      { yyerrok; ReportParserError("assignment_exp"); }
-                           | unary_exp TMODASSIGN error                                      { yyerrok; ReportParserError("assignment_exp"); }
+                           | unary_exp TASSIGN error                                         { yyerrok; ReportParserError("assignment_exp", lineNumber); }
+                           | unary_exp TADDASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
+                           | unary_exp TSUBASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
+                           | unary_exp TMULASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
+                           | unary_exp TDIVASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
+                           | unary_exp TMODASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
                                                                                              ;
 logical_or_exp             : logical_and_exp                                                 { semantic(61); }
                            | logical_or_exp TOR logical_and_exp                              { semantic(62); };
@@ -141,8 +142,8 @@ postfix_exp                : primary_exp                                        
                            | postfix_exp TLPAREN opt_actual_param TRPAREN                    { semantic(87); }
                            | postfix_exp TINC                                                { semantic(88); }
                            | postfix_exp TDEC                                                { semantic(89); }
-                           | postfix_exp TLBRACKET expression error                          { yyerrok; ReportParserError("postfix_exp"); }
-                           | postfix_exp TLPAREN opt_actual_param error                      { yyerrok; ReportParserError("postfix_exp"); };
+                           | postfix_exp TLBRACKET expression error                          { yyerrok; ReportParserError("postfix_exp", lineNumber); }
+                           | postfix_exp TLPAREN opt_actual_param error                      { yyerrok; ReportParserError("postfix_exp", lineNumber); };
 opt_actual_param           : actual_param                                                    { semantic(90); }
                            |                                                                 { semantic(91); };
 actual_param               : actual_param_list                                               { semantic(92); };
@@ -150,7 +151,7 @@ actual_param_list          : assignment_exp                                     
                            | actual_param_list TCOMMA assignment_exp                         { semantic(94); };
 primary_exp                : TIDENT                                                          { semantic(95); }
                            | TNUMBER                                                         { semantic(96); } 
-                           | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp"); }
+                           | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp", lineNumber); }
                            | TLPAREN expression TRPAREN                                      { semantic(97); };
 %%  
 void semantic(int n)
@@ -158,7 +159,7 @@ void semantic(int n)
    // printf("reduced rule number = %d\n", n);
 }
 
-void ReportParserError(char* message)
+void ReportParserError(char* message, int lineNumber)
 {
-   printf("--------------------- %s\n", message);
+   printf("--------------------- %s %d\n", message, lineNumber);
 }
