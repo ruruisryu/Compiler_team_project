@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern int error_cnt;
+
 //lineNumber 관련 변수
 int lineNumber = 1;//코드 lineNumber를 담는 변수
 int startLineNumber = 0;//주석 처리시 주석 시작 lineNumber를 담는 변수
@@ -99,8 +101,10 @@ void main()
 	//while ((tn = yylex()) != 0) {
 	//	printToken(tn);
 	//}
-
+	printf("***MiniC parsing begins\n");
 	yyparse();
+	printf("Parsing ends.***\n\n ");
+	printf("%d error(s) detected\n", error_cnt);
 
 	print_sym_table();
 	print_hash_table();
