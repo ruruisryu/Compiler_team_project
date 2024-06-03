@@ -835,22 +835,22 @@ return(TMODASSIGN);
 case 31:
 YY_RULE_SETUP
 #line 40 "scanner.l"
-return(TLPAREN);
+parenCnt++; return(TLPAREN); 
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
 #line 41 "scanner.l"
-return(TRPAREN);
+parenCnt--; return(TRPAREN); 
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
 #line 42 "scanner.l"
-return(TLBRACE);
+braceCnt++; return(TLBRACE); 
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
 #line 43 "scanner.l"
-return(TRBRACE);
+braceCnt--; return(TRBRACE); 
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
@@ -860,12 +860,12 @@ return(TCOMMA);
 case 36:
 YY_RULE_SETUP
 #line 45 "scanner.l"
-return(TLBRACKET);
+bracketCnt++; return(TLBRACKET); 
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
 #line 46 "scanner.l"
-return(TRBRACKET);
+bracketCnt--; return(TRBRACKET); 
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
@@ -927,7 +927,7 @@ YY_RULE_SETUP
 case 45:
 YY_RULE_SETUP
 #line 76 "scanner.l"
-lineNumber++; printf("lineNumber: %d\n", lineNumber);
+printf("lineNumber: %d\n", lineNumber); lineNumber++; 
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
@@ -1538,7 +1538,7 @@ FILE *file;
 #if YY_NEVER_INTERACTIVE
 	b->yy_is_interactive = 0;
 #else
-	b->yy_is_interactive = file ? (isatty( _fileno(file) ) > 0) : 0;
+	b->yy_is_interactive = file ? (isatty( fileno(file) ) > 0) : 0;
 #endif
 #endif
 	}

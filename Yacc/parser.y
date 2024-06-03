@@ -5,6 +5,7 @@
 
 extern void semantic(int);
 extern void ReportParserError(char* message);
+
 %}
 
 %token TIDENT TNUMBER TCONST TELSE TIF	TEIF TINT TRETURN TVOID TWHILE
@@ -56,10 +57,10 @@ formal_param_list          : param_dcl                                          
                            | formal_param_list TCOMMA param_dcl                              { semantic(21); };
 param_dcl                  : dcl_specifier declarator                                        { semantic(22); }
                            | dcl_specifier function_prototype                                ;
-compound_st                : TLBRACE TRBRACE                                                 { semantic(23); }
-                           | TLBRACE block_item_list TRBRACE                                 { semantic(23); }
-                           | TLBRACE error                                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); }
-                           | TLBRACE block_item_list error                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); };
+compound_st                : TLBRACE opt_block_items TRBRACE                                 { semantic(23); }
+                           | TLBRACE opt_block_items error                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); };
+opt_block_items            : block_item_list                                                 { semantic(24); }
+                           |                                                                 { semantic(25); };
 block_item_list            : block_item                                                      { semantic(26); }
                            | block_item_list block_item                                      { semantic(27); };
 block_item                 : declaration                                                     { semantic(28); }
@@ -97,7 +98,8 @@ if_st                      : TIF TLPAREN expression TRPAREN statement %prec LOWE
 while_st                   : TWHILE TLPAREN expression TRPAREN statement                     { semantic(51); }
                            | TWHILE TLPAREN expression error statement                       { yyerrok; ReportParserError("while_st MISSING RPAREN"); }
                            | TWHILE error expression TRPAREN statement                       { yyerrok; ReportParserError("while_st MISSING LPAREN"); };
-return_st                  : TRETURN expression_st                                           { semantic(52); };
+return_st                  : TRETURN opt_expression TSEMI                                    { semantic(52); }
+                           | TRETURN opt_expression error                                    { yyerrok; ReportParserError("return_st MISSING SEMI"); };
 expression                 : assignment_exp                                                  { semantic(53); };
 assignment_exp             : logical_or_exp                                                  { semantic(54); }
                            | unary_exp TASSIGN assignment_exp                                { semantic(55); }
@@ -112,7 +114,7 @@ assignment_exp             : logical_or_exp                                     
                            | unary_exp TMULASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_MULTIASSIGN_EXP"); }
                            | unary_exp TDIVASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_DIVASSIGN_EXP"); }
                            | unary_exp TMODASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_MODASSIGN_EXP"); }
-                                                                                             ;
+                           ;
 logical_or_exp             : logical_and_exp                                                 { semantic(61); }
                            | logical_or_exp TOR logical_and_exp                              { semantic(62); };
 logical_and_exp            : equality_exp                                                    { semantic(63); }
@@ -139,14 +141,13 @@ unary_exp                  : postfix_exp                                        
                            | TDEC unary_exp                                                  { semantic(84); };
 postfix_exp                : primary_exp                                                     { semantic(85); }
                            | postfix_exp TLBRACKET expression TRBRACKET                      { semantic(86); }
-                           | postfix_exp TLPAREN opt_actual_param TRPAREN                    { semantic(87); }
+                           | postfix_exp TLPAREN actual_param_list TRPAREN                   { semantic(87); }
+                           | postfix_exp TLPAREN TRPAREN                                     { semantic(87); }
                            | postfix_exp TINC                                                { semantic(88); }
                            | postfix_exp TDEC                                                { semantic(89); }
                            | postfix_exp TLBRACKET expression error                          { yyerrok; ReportParserError("postfix_exp"); }
-                           | postfix_exp TLPAREN opt_actual_param error                      { yyerrok; ReportParserError("postfix_exp"); };
-opt_actual_param           : actual_param                                                    { semantic(90); }
-                           |                                                                 { semantic(91); };
-actual_param               : actual_param_list                                               { semantic(92); };
+                           | postfix_exp TLPAREN actual_param_list error                     { yyerrok; ReportParserError("postfix_exp"); }
+                           | postfix_exp TLPAREN error                                       { yyerrok; ReportParserError("postfix_exp"); };
 actual_param_list          : assignment_exp                                                  { semantic(93); }
                            | actual_param_list TCOMMA assignment_exp                         { semantic(94); };
 primary_exp                : TIDENT                                                          { semantic(95); }
@@ -160,9 +161,3 @@ void semantic(int n)
 {
    // printf("reduced rule number = %d\n", n);
 }
-
-
-/* void ReportParserError(char* message, in)
-{
-   printf("--------------------- %s %d\n", message);
-} */
