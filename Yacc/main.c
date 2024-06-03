@@ -14,7 +14,7 @@ int startLineNumber = 0;//주석 처리시 주석 시작 lineNumber를 담는 �
 ERRORtypes err = noerror;//에러 타입을 담는 변수
 
 char str_tokentypes[][16] = {
-			"TIDENT",
+	"TIDENT",
 	"TNUMBER",
 	"TCONST",
 	"TELSE",
