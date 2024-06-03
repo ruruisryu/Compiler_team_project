@@ -73,7 +73,7 @@ digit	[0-9]
 							ReportError(illid_digit); 
 							return(TERROR);
 						}
-"\n"     					lineNumber++; printf("lineNumber: %d\n", lineNumber);
+"\n"     					printf("lineNumber: %d\n", lineNumber); lineNumber++; 
 [ \t\r]   					;
 .                       				{ 
 							ReportError(illch);

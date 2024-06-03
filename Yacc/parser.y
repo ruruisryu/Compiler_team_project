@@ -153,7 +153,6 @@ actual_param_list          : assignment_exp                                     
 primary_exp                : TIDENT                                                          { semantic(95); }
                            | TERROR
                            | TNUMBER                                                         { semantic(96); }                                  
-                                                       { semantic(96); } 
                            | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp"); }
                            | TLPAREN expression TRPAREN                                      { semantic(97); };
 %%  
