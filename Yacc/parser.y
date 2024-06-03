@@ -56,10 +56,10 @@ formal_param_list          : param_dcl                                          
                            | formal_param_list TCOMMA param_dcl                              { semantic(21); };
 param_dcl                  : dcl_specifier declarator                                        { semantic(22); }
                            | dcl_specifier function_prototype                                ;
-compound_st                : TLBRACE opt_block_items TRBRACE                                 { semantic(23); }
-                           | TLBRACE opt_block_items error                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); };
-opt_block_items            : block_item_list                                                 { semantic(24); }
-                           |                                                                 { semantic(25); };
+compound_st                : TLBRACE TRBRACE                                                 { semantic(23); }
+                           | TLBRACE block_item_list TRBRACE                                 { semantic(23); }
+                           | TLBRACE error                                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); }
+                           | TLBRACE block_item_list error                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); };
 block_item_list            : block_item                                                      { semantic(26); }
                            | block_item_list block_item                                      { semantic(27); };
 block_item                 : declaration                                                     { semantic(28); }
@@ -77,8 +77,8 @@ declarator                 : TIDENT                                             
                            | TERROR
                            | TIDENT TLBRACKET opt_number TRBRACKET                           { semantic(34); }; // 배열 선언
                            | TERROR TLBRACKET opt_number TRBRACKET 
-                           | TIDENT TLBRACKET opt_number error                               { yyerrok; ReportParserError("declarator MISSING RBRAKET"); };   
-                           | TERROR TLBRACKET opt_number error  
+                           | TIDENT TLBRACKET opt_number error                               { yyerrok; ReportParserError("declarator MISSING RBRAKET"); }  
+                           | TERROR TLBRACKET opt_number error                               ;
 opt_number                 : TNUMBER                                                         { semantic(35); }
                            |                                                                 { semantic(36); };
 statement                  : compound_st                                                     { semantic(41); }
@@ -87,9 +87,9 @@ statement                  : compound_st                                        
                            | while_st                                                        { semantic(44); }
                            | return_st                                                       { semantic(45); }
                            ;                                  
-expression_st              : opt_expression TSEMI                                            { semantic(46); };
-opt_expression             : expression                                                      { semantic(47); }
-                           |                                                                 { semantic(48); };
+expression_st              : expression TSEMI                                                { semantic(46); }
+                           | TSEMI                                                           { semantic(46); }
+                           | expression error                                                { yyerrok; ReportParserError("expression_st MISSING SEMI"); };
 if_st                      : TIF TLPAREN expression TRPAREN statement %prec LOWER_THAN_ELSE  { semantic(49); }
                            | TIF TLPAREN expression TRPAREN statement TELSE statement        { semantic(50); }
                            | TIF TLPAREN expression error statement                          { yyerrok; ReportParserError("if_st MISSING RPAREN"); }
@@ -97,8 +97,7 @@ if_st                      : TIF TLPAREN expression TRPAREN statement %prec LOWE
 while_st                   : TWHILE TLPAREN expression TRPAREN statement                     { semantic(51); }
                            | TWHILE TLPAREN expression error statement                       { yyerrok; ReportParserError("while_st MISSING RPAREN"); }
                            | TWHILE error expression TRPAREN statement                       { yyerrok; ReportParserError("while_st MISSING LPAREN"); };
-return_st                  : TRETURN opt_expression TSEMI                                    { semantic(52); }
-                           | TRETURN opt_expression error                                    { yyerrok; ReportParserError("return_st MISSING SEMI"); };
+return_st                  : TRETURN expression_st                                           { semantic(52); };
 expression                 : assignment_exp                                                  { semantic(53); };
 assignment_exp             : logical_or_exp                                                  { semantic(54); }
                            | unary_exp TASSIGN assignment_exp                                { semantic(55); }
@@ -153,7 +152,6 @@ actual_param_list          : assignment_exp                                     
 primary_exp                : TIDENT                                                          { semantic(95); }
                            | TERROR
                            | TNUMBER                                                         { semantic(96); }                                  
-                                                       { semantic(96); } 
                            | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp"); }
                            | TLPAREN expression TRPAREN                                      { semantic(97); };
 %%  
