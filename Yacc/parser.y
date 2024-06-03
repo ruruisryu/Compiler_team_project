@@ -110,12 +110,12 @@ assignment_exp             : logical_or_exp                                     
                            | unary_exp TMULASSIGN assignment_exp                             { semantic(58); }
                            | unary_exp TDIVASSIGN assignment_exp                             { semantic(59); }
                            | unary_exp TMODASSIGN assignment_exp                             { semantic(60); }
-                           | unary_exp TASSIGN error                                         { yyerrok; ReportParserError("assignment_exp", lineNumber); }
-                           | unary_exp TADDASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
-                           | unary_exp TSUBASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
-                           | unary_exp TMULASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
-                           | unary_exp TDIVASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
-                           | unary_exp TMODASSIGN error                                      { yyerrok; ReportParserError("assignment_exp", lineNumber); }
+                           | unary_exp TASSIGN error                                         { yyerrok; ReportParserError("NO_RIGHT_EXP", lineNumber); }
+                           | unary_exp TADDASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_ADDASSIGN_EXP", lineNumber); }
+                           | unary_exp TSUBASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_SUBASSIGN_EXP", lineNumber); }
+                           | unary_exp TMULASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_MULTIASSIGN_EXP", lineNumber); }
+                           | unary_exp TDIVASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_DIVASSIGN_EXP", lineNumber); }
+                           | unary_exp TMODASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_MODASSIGN_EXP", lineNumber); }
                                                                                              ;
 logical_or_exp             : logical_and_exp                                                 { semantic(61); }
                            | logical_or_exp TOR logical_and_exp                              { semantic(62); };
@@ -166,7 +166,8 @@ void semantic(int n)
    // printf("reduced rule number = %d\n", n);
 }
 
-void ReportParserError(char* message, int lineNumber)
+
+/* void ReportParserError(char* message, int lineNumber)
 {
    printf("--------------------- %s %d\n", message, lineNumber);
-}
+} */
