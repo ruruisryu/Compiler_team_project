@@ -26,6 +26,7 @@ int flag = 0; // 1: True (param이면 true)
 
 int* invoked_func_args;
 int invoked_func_args_cnt = 0;
+bool isArray = false; // 추가된 변수
 %}
 
 %token TIDENT TNUMBER TCONST TELSE TIF	TEIF TINT TRETURN TVOID TWHILE
@@ -80,7 +81,7 @@ function_name              : TIDENT                                             
                                                                                              }; // 테스트용 functionparameter 호출
 
                            | TERROR
-                           |                                                                 {yyerrok; ReportParserError("NO_FUNC_NAME")};
+                           |                                                                 { yyerrok; ReportParserError("NO_FUNC_NAME")};
 formal_param               : TLPAREN opt_formal_param TRPAREN                                { semantic(17); }
                            | TLPAREN opt_formal_param error                                  { yyerrok; ReportParserError("formal_param"); };
 opt_formal_param           : formal_param_list                                               { semantic(18); }
@@ -89,8 +90,10 @@ formal_param_list          : param_dcl                                          
                            | formal_param_list TCOMMA param_dcl                              { semantic(21); }
                            | formal_param_list param_dcl error                               { yyerrok; ReportParserError("NO_COMMA"); }
                            ;
-param_dcl                  : dcl_specifier declarator                                        {if (returnType==1) updateIdentType("int scalar parameter", identStr);  // int scalar variable
-                                                                                                else if (returnType ==2) updateIdentType("float scalar parameter", identStr); };
+param_dcl                  : dcl_specifier ident                                             { if (returnType==1) updateIdentType("int scalar parameter", identStr);  
+                                                                                                else if (returnType ==2) updateIdentType("float scalar parameter", identStr); }
+                           | dcl_specifier array                                             { if (returnType==1) updateIdentType("int array parameter", identStr);  
+                                                                                                else if (returnType ==2) updateIdentType("float array parameter", identStr); }
                            | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE TRBRACE                                                 { semantic(23); }
                            | TLBRACE block_item_list TRBRACE                                 { semantic(23); }
@@ -104,19 +107,35 @@ declaration                : dcl_spec init_dcl_list TSEMI                       
                            | dcl_spec init_dcl_list error                                    { yyerrok; ReportParserError("declaration MISSING SEMI"); };
 init_dcl_list              : init_declarator                                                 { semantic(29); }
                            | init_dcl_list TCOMMA init_declarator                            { semantic(30); };
-init_declarator            : declarator                                                      { if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
+init_declarator            : ident                                                           { if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
                                                                                                 else if (returnType ==2) updateIdentType("float scalar variable", identStr);  } // float scalar variable
-                           | declarator TASSIGN TNUMBER                                      { if (getIdentType(identStr) != 1) ReportParserError("type mismatch in initialization"); }
-                           | declarator TASSIGN TFNUMBER                                     { if (getIdentType(identStr) != 2) ReportParserError("type mismatch in initialization"); }
-                           | declarator TASSIGN error                                        { yyerrok; ReportParserError("init_declarator"); };
-                           | function_prototype                                              ;
-
-declarator                 : TIDENT                                                          { // if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
-                                                                                                //else if (returnType ==2) updateIdentType("float scalar variable", identStr); 
-                                                                                                } // float scalar variable 
+                           | array                                                           { if (returnType==1) updateIdentType("int array variable", identStr); // int 배열 선언
+                                                                                                else if (returnType==2) updateIdentType("float array variable", identStr);  }; //float 배열 선언
+                           | ident TASSIGN TNUMBER                                           { if (returnType==1) updateIdentType("int scalar variable", identStr);  
+                                                                                                else if (returnType ==2) updateIdentType("float scalar variable", identStr);  
+                                                                                                if (getIdentType(identStr) != 1) ReportParserError("type mismatch in initialization"); 
+                                                                                             } 
+                           | ident TASSIGN TFNUMBER                                          { if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
+                                                                                                else if (returnType ==2) updateIdentType("float scalar variable", identStr);  
+                                                                                                  
+                                                                                                if (getIdentType(identStr) != 2) ReportParserError("type mismatch in initialization"); 
+                                                                                             } 
+                           | ident TASSIGN error                                             { yyerrok; ReportParserError("init_declarator"); }
+                           | array TASSIGN TNUMBER                                           { if (returnType==1) updateIdentType("int array variable", identStr);
+                                                                                                else if (returnType==2) updateIdentType("float array variable", identStr);  
+                                                                                                if (getIdentType(identStr) != 1) ReportParserError("type mismatch in initialization"); 
+                                                                                             } 
+                           | array TASSIGN TFNUMBER                                          { if (returnType==1) updateIdentType("int array variable", identStr); 
+                                                                                                else if (returnType==2) updateIdentType("float array variable", identStr);   
+                                                                                                if (getIdentType(identStr) != 2) ReportParserError("type mismatch in initialization"); 
+                                                                                             } 
+                           | array TASSIGN error                                             { yyerrok; ReportParserError("init_declarator"); }
+                           | function_prototype                                              
+                           ;
+ident                      : TIDENT                                                          {} 
                            | TERROR
-                           | TIDENT TLBRACKET opt_number TRBRACKET                           { if (returnType==1) updateIdentType("int array variable", identStr); // int 배열 선언
-                                                                                               else if (returnType==2) updateIdentType("float array variable", identStr);  }; //float 배열 선언
+                           ;
+array                      : TIDENT TLBRACKET opt_number TRBRACKET                          
                            | TERROR TLBRACKET opt_number TRBRACKET 
                            | TIDENT TLBRACKET opt_number error                               { yyerrok; ReportParserError("declarator MISSING RBRAKET"); }  
                            | TERROR TLBRACKET opt_number error                               ;
@@ -185,16 +204,11 @@ additive_exp               : multiplicative_exp                                 
                            | additive_exp TSUB error                                         { yyerrok; ReportParserError("NO_RIGHT_TSUB_EXP");}
                            ;
 multiplicative_exp         : unary_exp                                                       { semantic(76); }
-                           | TNUMBER                                                         { if (getIdentType(identStr) != 1) ReportParserError("type mismatch in assignment"); }
-                           | TFNUMBER                                                        { if (getIdentType(identStr) != 2) ReportParserError("type mismatch in assignment"); }
+                           | TNUMBER
+                           | TFNUMBER
                            | multiplicative_exp TMUL unary_exp                               { semantic(77); }
                            | multiplicative_exp TDIV unary_exp                               { semantic(78); }
                            | multiplicative_exp TMOD unary_exp                               { semantic(79); }
-                           | multiplicative_exp TMUL TNUMBER                                 { semantic(77); }
-                           | multiplicative_exp TDIV TNUMBER                                 { semantic(78); }
-                           | multiplicative_exp TMOD TNUMBER                                 { semantic(79); }
-                           | multiplicative_exp TMUL TFNUMBER                                { semantic(77); }
-                           | multiplicative_exp TDIV TFNUMBER                                { semantic(78); }
                            | multiplicative_exp TMUL error                                   { yyerrok; ReportParserError("NO_RIGHT_TMUL_EXP"); }
                            | multiplicative_exp TDIV error                                   { yyerrok; ReportParserError("NO_RIGHT_TDIV_EXP"); }
                            | multiplicative_exp TMOD error                                   { yyerrok; ReportParserError("NO_RIGHT_TMOD_EXP"); }
@@ -256,9 +270,9 @@ int getIdentType(const char *identifier)
    struct Ident sym_ident = sym_table[hash_ident->index];  
    char* identType = sym_ident.ident_type;
    
-   if (strcmp(identType, "int scalar variable") == 0)
+   if (strcmp(identType, "int scalar variable") == 0 || strcmp(identType, "int array variable") == 0)
       return 1;
-   else if (strcmp(identType, "float scalar variable") == 0)
+   else if (strcmp(identType, "float scalar variable") == 0 || strcmp(identType, "float array variable") == 0)
       return 2;
    else
       return 0;
