@@ -92,7 +92,8 @@ init_declarator            : declarator                                         
 declarator                 : TIDENT                                                          {  if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
                                                                                                 else if (returnType ==2) updateIdentType("float scalar variable", identStr); } // float scalar variable 
                            | TERROR
-                           | TIDENT TLBRACKET opt_number TRBRACKET                           { semantic(34);}; // 배열 선언
+                           | TIDENT TLBRACKET opt_number TRBRACKET                           { if (returnType==1) updateIdentType("int array variable", identStr); // int 배열 선언
+                                                                                               else if (returnType==2) updateIdentType("float array variable", identStr);  }; //float 배열 선언
                            | TERROR TLBRACKET opt_number TRBRACKET 
                            | TIDENT TLBRACKET opt_number error                               { yyerrok; ReportParserError("declarator MISSING RBRAKET"); }  
                            | TERROR TLBRACKET opt_number error                               ;
