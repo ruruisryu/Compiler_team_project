@@ -5,8 +5,6 @@
 
 #define MAX_ERROR_MSG	100
 extern void yyerror(char* s);
-extern void ReportBracketError();
-extern int braceCnt, parenCnt, bracketCnt;
 
 int error_cnt = 0;
 char error_message[MAX_ERROR_MSG]; //에러 메세지를 담는 변수 (메인에서 error_message를 출력한다.)
@@ -37,24 +35,6 @@ void ReportError(ERRORtypes err)
 void ReportParserError(char* message) {
 	error_cnt++;
 	printf("(line: %d) %s\n", lineNumber, message);
-}
-
-void PrintBracketError(char* bracketType, int diff) {
-	diff = abs(diff);
-	error_cnt += diff;
-	printf("%s mismatch : %d\n", bracketType, diff);
-}
-
-void ReportBracketError() {
-	if (braceCnt != 0) {
-		PrintBracketError("BRACE", braceCnt);
-	}
-	if (parenCnt != 0) {
-		PrintBracketError("PAREN", parenCnt);
-	}
-	if (bracketCnt != 0) {
-		PrintBracketError("BRACKET", bracketCnt);
-	}
 }
 
 void yyerror(char* s) {

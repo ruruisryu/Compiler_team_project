@@ -37,13 +37,13 @@ digit	[0-9]
 "*="							return(TMULASSIGN);
 "/="							return(TDIVASSIGN);
 "%="							return(TMODASSIGN);
-"("             				parenCnt++; return(TLPAREN); 
-")"             				parenCnt--; return(TRPAREN); 
-"{"             				braceCnt++; return(TLBRACE); 
-"}"             				braceCnt--; return(TRBRACE); 
+"("             				return(TLPAREN); 
+")"             				return(TRPAREN); 
+"{"             				return(TLBRACE); 
+"}"             				return(TRBRACE); 
 ","								return(TCOMMA);
-"["								bracketCnt++; return(TLBRACKET); 
-"]"								bracketCnt--; return(TRBRACKET); 
+"["								return(TLBRACKET); 
+"]"								return(TRBRACKET); 
 ";"								return(TSEMI);
 "/*"([^*]|"*"+[^*/])*"*"+"/"    		{
                                     			startLineNumber = lineNumber;

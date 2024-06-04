@@ -20,7 +20,6 @@ void updateReturnType(int returntype, const char *identifier);
 void updateIdentType(const char *type, const char *identifier);
 
 int returnType = 0;
-unsigned int currlinenum;
 %}
 
 %token TIDENT TNUMBER TCONST TELSE TIF	TEIF TINT TRETURN TVOID TWHILE
@@ -105,7 +104,12 @@ statement                  : compound_st                                        
                            ;                                  
 expression_st              : expression TSEMI                                                { semantic(46); }
                            | TSEMI                                                           { semantic(46); }
-                           | expression error                                                { yyerrok; ReportParserError("expression_st MISSING SEMI"); };
+                           | expression error                                                { yyerrok; ReportParserError("expression_st MISSING SEMI"); }
+                           | TNUMBER assignment_op                                           { yyerrok; ReportParserError("cannot assign to integer"); }
+                           | TFNUMBER assignment_op                                          { yyerrok; ReportParserError("cannot assign to float"); }                                                     
+                           | TNUMBER TINC                                                    { yyerrok; ReportParserError("cannot increment integer"); }
+                           | TFNUMBER TDEC                                                   { yyerrok; ReportParserError("cannot decrement float"); }                                                     
+                           ;
 if_st                      : TIF TLPAREN expression TRPAREN statement %prec LOWER_THAN_ELSE  { semantic(49); }
                            | TIF TLPAREN expression TRPAREN statement TELSE statement        { semantic(50); }
                            | TIF TLPAREN expression error statement                          { yyerrok; ReportParserError("if_st MISSING RPAREN"); }
@@ -116,18 +120,15 @@ while_st                   : TWHILE TLPAREN expression TRPAREN statement        
 return_st                  : TRETURN expression_st                                           { semantic(52); };
 expression                 : assignment_exp                                                  { semantic(53); };
 assignment_exp             : logical_or_exp                                                  { semantic(54); }
-                           | unary_exp TASSIGN assignment_exp                                { semantic(55); }
-                           | unary_exp TADDASSIGN assignment_exp                             { semantic(56); }
-                           | unary_exp TSUBASSIGN assignment_exp                             { semantic(57); }
-                           | unary_exp TMULASSIGN assignment_exp                             { semantic(58); }
-                           | unary_exp TDIVASSIGN assignment_exp                             { semantic(59); }
-                           | unary_exp TMODASSIGN assignment_exp                             { semantic(60); }
-                           | unary_exp TASSIGN error                                         { yyerrok; ReportParserError("NO_RIGHT_EXP"); }
-                           | unary_exp TADDASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_ADDASSIGN_EXP"); }
-                           | unary_exp TSUBASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_SUBASSIGN_EXP"); }
-                           | unary_exp TMULASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_MULTIASSIGN_EXP"); }
-                           | unary_exp TDIVASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_DIVASSIGN_EXP"); }
-                           | unary_exp TMODASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_MODASSIGN_EXP"); } 
+                           | unary_exp assignment_op assignment_exp                          { semantic(55); }
+                           | unary_exp assignment_op error                                   { yyerrok; ReportParserError("NO_RIGHT_ASSIGNMENT_EXP"); }
+                           ;
+assignment_op              : TASSIGN                                                  
+                           | TADDASSIGN
+                           | TSUBASSIGN
+                           | TMULASSIGN
+                           | TDIVASSIGN
+                           | TMODASSIGN
                            ;
 logical_or_exp             : logical_and_exp                                                 { semantic(61); }
                            | logical_or_exp TOR logical_and_exp                              { semantic(62); };
@@ -158,6 +159,8 @@ additive_exp               : multiplicative_exp                                 
                            | additive_exp TSUB error                                         { yyerrok; ReportParserError("NO_RIGHT_TSUB_EXP");}
                            ;
 multiplicative_exp         : unary_exp                                                       { semantic(76); }
+                           | TNUMBER
+                           | TFNUMBER
                            | multiplicative_exp TMUL unary_exp                               { semantic(77); }
                            | multiplicative_exp TDIV unary_exp                               { semantic(78); }
                            | multiplicative_exp TMOD unary_exp                               { semantic(79); }
@@ -165,27 +168,27 @@ multiplicative_exp         : unary_exp                                          
                            | multiplicative_exp TDIV error                                   { yyerrok; ReportParserError("NO_RIGHT_TDIV_EXP"); }
                            | multiplicative_exp TMOD error                                   { yyerrok; ReportParserError("NO_RIGHT_TMOD_EXP"); }
                            ;
-unary_exp                  : postfix_exp                                                     { semantic(80); }
+unary_exp                  : postfix_exp                                                     { semantic(80); } // 할당문 좌변
                            | TSUB unary_exp                                                  { semantic(81); }
                            | TNOT unary_exp                                                  { semantic(82); }
                            | TINC unary_exp                                                  { semantic(83); }
-                           | TDEC unary_exp                                                  { semantic(84); };
+                           | TDEC unary_exp                                                  { semantic(84); }
+                           ;
 postfix_exp                : primary_exp                                                     { semantic(85); }
                            | postfix_exp TLBRACKET expression TRBRACKET                      { semantic(86); } // 배열 인덱스 접근
                            | postfix_exp TLPAREN opt_actual_param TRPAREN                    { semantic(87); } // 함수 호출
                            | postfix_exp TINC                                                { semantic(88); } // a++
                            | postfix_exp TDEC                                                { semantic(89); } // a--
                            | postfix_exp TLBRACKET expression error                          { yyerrok; ReportParserError("postfix_exp"); }
-                           | postfix_exp TLPAREN opt_actual_param error                      { yyerrok; ReportParserError("postfix_exp"); };
+                           | postfix_exp TLPAREN opt_actual_param error                      { yyerrok; ReportParserError("postfix_exp"); }
+                           ;
 opt_actual_param           : actual_param                                                    { semantic(90); }
                            |                                                                 { semantic(91); };
 actual_param               : actual_param_list                                               { semantic(92); };
 actual_param_list          : assignment_exp                                                  { semantic(93); }
                            | actual_param_list TCOMMA assignment_exp                         { semantic(94); };
 primary_exp                : TIDENT                                                          { if (!checkIdentExists(identStr)) { ReportParserError("invalid identifier"); }}
-                           | TERROR                                                          
-                           | TNUMBER                                                         { semantic(96); }   
-                           | TFNUMBER                               
+                           | TERROR                           
                            | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp"); }
                            | TLPAREN expression TRPAREN                                      { semantic(97); };
 %%  
@@ -219,12 +222,13 @@ HTpointer getIdentHash(const char *identifier)
 int checkIdentExists(const char *identifier)
 {
    HTpointer hash_ident = getIdentHash(identifier);
-   if (hash_ident != NULL)
-   {
-      struct Ident sym_ident = sym_table[hash_ident->index];   
-      if (sym_ident.ident_type == NULL || strcmp(sym_ident.ident_type, "none") == 0) {
-         return 0;
-      }
+   if (hash_ident == NULL) {
+      return 0;
+   }
+
+   struct Ident sym_ident = sym_table[hash_ident->index];   
+   if (sym_ident.ident_type == NULL || strcmp(sym_ident.ident_type, "none") == 0) {
+      return 0;
    }
    return 1;
 }
@@ -247,7 +251,7 @@ void updateIdentType(const char *type, const char *identifier)
         strncpy_s(sym_ident.ident_type, sizeof(sym_ident.ident_type), type, _TRUNCATE);	
         sym_ident.ident_type[sizeof(sym_ident.ident_type) - 1] = '\0'; 
         sym_table[hash_ident->index] = sym_ident;
-        printf("sym_ident.ident_type: %s", sym_ident.ident_type);
+        printf("sym_ident.ident_type: %s\n", sym_ident.ident_type);
     } 
     else {
         if (sym_ident.linenumber != lineNumber) {
@@ -271,7 +275,7 @@ void updateReturnType(int returntype, const char *identifier)
    struct Ident sym_ident = sym_table[hash_ident->index];   
    if (strcmp(sym_ident.ident_type, "function") == 0) {	// type이 function name인 경우
       snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "%d", returntype);	// 매개변수로 받은 returntype 설정
-      printf("sym_ident.return_type: %s", sym_ident.return_type);
+      printf("sym_ident.return_type: %s\n", sym_ident.return_type);
       sym_table[hash_ident->index] = sym_ident;
    } 
    else {

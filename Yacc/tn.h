@@ -56,7 +56,6 @@ typedef enum errorTypes ERRORtypes;
 extern int lineNumber;
 extern int startLineNumber;//�ּ�ó���� ���� lineNumber�� �����ϴ� ����
 extern char error_message[];
-int braceCnt, parenCnt, bracketCnt;
 
 //lex ���� ����
 extern char* yytext;

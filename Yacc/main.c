@@ -5,12 +5,10 @@
 #include <stdlib.h>
 
 extern int error_cnt;
-extern void ReportBracketError();
 
 //lineNumber 관련 변수
 int lineNumber = 1;//코드 lineNumber를 담는 변수
 int startLineNumber = 0;//주석 처리시 주석 시작 lineNumber를 담는 변수
-int braceCnt, parenCnt, bracketCnt = 0;
 
 //error 관련 변수
 ERRORtypes err = noerror;//에러 타입을 담는 변수
@@ -105,7 +103,6 @@ void main()
 	//}
 	printf("***MiniC parsing begins\n");
 	yyparse();
-	ReportBracketError();
 
 	printf("Parsing ends.***\n\n ");
 	printf("%d error(s) detected\n", error_cnt);
