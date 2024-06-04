@@ -10,7 +10,9 @@
 #include "hash_func.h"
 #include "tn.h"
 
+extern int lineNumber; 
 extern void semantic(int);
+void ReportError(ERRORtypes err);
 extern void ReportParserError(char* message);
 HTpointer getIdentHash(const char *identifier);
 bool checkIdentExists(const char *identifier);
@@ -50,7 +52,6 @@ type_only_param_list       : type_only_param_dcl                                
                            | type_only_param_list TCOMMA param_dcl                           { semantic(21); }
                            | formal_param_list TCOMMA type_only_param_dcl                    { semantic(21); };
 type_only_param_dcl        : dcl_specifier                                                   { semantic(22); };
-//
 dcl_spec                   : dcl_specifiers                                                  { semantic(8); };
 dcl_specifiers             : dcl_specifier                                                   { semantic(9); }
                            | dcl_specifiers dcl_specifier                                    { semantic(10); };
@@ -255,8 +256,9 @@ void updateIdentType(const char *type, const char *identifier)
         printf("sym_ident.ident_type: %s", sym_ident.ident_type);
     } 
     else {
-        if (sym_ident.linenumber != currlinenum) {
-            printf("Already declared\n");
+        if (sym_ident.linenumber != lineNumber) {
+            //printf("Already declared\n"); 
+            ReportParserError("Already declared");
         }
     }
     printf("updateIdentType complete\n");
