@@ -12,7 +12,6 @@
 
 extern int lineNumber; 
 extern void semantic(int);
-void ReportError(ERRORtypes err);
 extern void ReportParserError(char* message);
 HTpointer getIdentHash(const char *identifier);
 int checkIdentExists(const char *identifier);
@@ -68,7 +67,9 @@ formal_param               : TLPAREN opt_formal_param TRPAREN                   
 opt_formal_param           : formal_param_list                                               { semantic(18); }
                            |                                                                 { semantic(19); };
 formal_param_list          : param_dcl                                                       { semantic(20); }
-                           | formal_param_list TCOMMA param_dcl                              { semantic(21); };
+                           | formal_param_list TCOMMA param_dcl                              { semantic(21); }
+                           | formal_param_list param_dcl error                               { yyerrok; ReportParserError("NO_COMMA"); }
+                           ;
 param_dcl                  : dcl_specifier declarator                                        { semantic(22); }
                            | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE TRBRACE                                                 { semantic(23); }
@@ -88,7 +89,8 @@ init_declarator            : declarator                                         
                            | declarator TASSIGN TFNUMBER            
                            | declarator TASSIGN error                                        { yyerrok; ReportParserError("init_declarator"); };
                            | function_prototype                                              ;
-declarator                 : TIDENT                                                          { semantic(33); updateIdentType("scalar variable", identStr);}  // int scalar variable
+declarator                 : TIDENT                                                          {  if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
+                                                                                                else if (returnType ==2) updateIdentType("float scalar variable", identStr); } // float scalar variable 
                            | TERROR
                            | TIDENT TLBRACKET opt_number TRBRACKET                           { semantic(34);}; // 배열 선언
                            | TERROR TLBRACKET opt_number TRBRACKET 
