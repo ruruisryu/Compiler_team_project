@@ -462,3 +462,5 @@ cmake-build-debug/
 CMakeLists.txt
 
 Lex/Solution/Solution.sln
+
+Yacc/.vscode/settings.json
