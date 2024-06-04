@@ -36,7 +36,7 @@ void ReportError(ERRORtypes err)
 
 void ReportParserError(char* message) {
 	error_cnt++;
-	printf("(line: %d) %s\n", lineNumber - 1, message);
+	printf("(line: %d) %s\n", lineNumber, message);
 }
 
 void PrintBracketError(char* bracketType, int diff) {
