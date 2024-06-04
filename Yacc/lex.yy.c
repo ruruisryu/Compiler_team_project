@@ -835,22 +835,22 @@ return(TMODASSIGN);
 case 31:
 YY_RULE_SETUP
 #line 40 "scanner.l"
-return(TLPAREN);
+parenCnt++; return(TLPAREN); 
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
 #line 41 "scanner.l"
-return(TRPAREN);
+parenCnt--; return(TRPAREN); 
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
 #line 42 "scanner.l"
-return(TLBRACE);
+braceCnt++; return(TLBRACE); 
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
 #line 43 "scanner.l"
-return(TRBRACE);
+braceCnt--; return(TRBRACE); 
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
@@ -860,12 +860,12 @@ return(TCOMMA);
 case 36:
 YY_RULE_SETUP
 #line 45 "scanner.l"
-return(TLBRACKET);
+bracketCnt++; return(TLBRACKET); 
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
 #line 46 "scanner.l"
-return(TRBRACKET);
+bracketCnt--; return(TRBRACKET); 
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
