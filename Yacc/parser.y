@@ -12,8 +12,8 @@
 
 extern void semantic(int);
 extern void ReportParserError(char* message);
-void defineReturnType(int returntype, const char *identifier); 
-void defineIdentType(const char *type, const char *identifier);
+void updateReturnType(int returntype, const char *identifier); 
+void updateIdentType(const char *type, const char *identifier);
 
 int returnType = 0;
 unsigned int currlinenum;
@@ -58,7 +58,7 @@ type_qualifier             : TCONST                                             
 type_specifier             : TINT                                                            { semantic(14); returnType = 1;}
                            | TFLOAT                                                          { returnType = 2;}
                            | TVOID                                                           { semantic(15); returnType = 0;};
-function_name              : TIDENT                                                          { semantic(16); defineIdentType("function", identStr); defineReturnType(returnType, identStr);};
+function_name              : TIDENT                                                          { semantic(16); updateIdentType("function", identStr); updateReturnType(returnType, identStr);};
                            | TERROR
                            |                                                                 {yyerrok; ReportParserError("NO_FUNC_NAME")};
 formal_param               : TLPAREN opt_formal_param TRPAREN                                { semantic(17); }
@@ -86,9 +86,9 @@ init_declarator            : declarator                                         
                            | declarator TASSIGN TFNUMBER            
                            | declarator TASSIGN error                                        { yyerrok; ReportParserError("init_declarator"); };
                            | function_prototype                                              ;
-declarator                 : TIDENT                                                          { semantic(33); defineIdentType("int scalar variable", identStr);}
+declarator                 : TIDENT                                                          { semantic(33); updateIdentType("scalar variable", identStr);}  // int scalar variable
                            | TERROR
-                           | TIDENT TLBRACKET opt_number TRBRACKET                           { semantic(34); }; // 배열 선언
+                           | TIDENT TLBRACKET opt_number TRBRACKET                           { semantic(34);}; // 배열 선언
                            | TERROR TLBRACKET opt_number TRBRACKET 
                            | TIDENT TLBRACKET opt_number error                               { yyerrok; ReportParserError("declarator MISSING RBRAKET"); }  
                            | TERROR TLBRACKET opt_number error                               ;
@@ -199,82 +199,84 @@ void semantic(int n)
 } */
 
 
-void defineIdentType(const char *type, const char *identifier)
+void updateIdentType(const char *type, const char *identifier)
 {
-    printf("-------------------------defineIdentType-------------------------\n");
+    printf("-------------------------updateIdentType-------------------------\n");
     int length = strlen(identifier);
 
-    // 해당 identifier의 해시코드 구하기
-    int hashcode = divisionMethod(identifier, HASH_TABLE_SIZE);
+    // 인식된 identifier의 해시값으로 해시테이블과 심볼테이블에 접근해 identifier가 저장되어있는지 확인
+    int hashValue = divisionMethod(identifier, HASH_TABLE_SIZE);
+    HTpointer hash_ident = lookup_hash_table(identifier, hashValue);
 
-    HTpointer here = lookup_hash_table(identifier, hashcode);
-    bool found = false; 	// Hash Table을 읽기 전, false로 초기화
-    
+    bool isExist = false;
 
-    // hash code 위치에 어떠한 문자라도 존재하는 경우
-    while (here != NULL && !found) {	// 현재 가리키는 위치에 문자가 있고 아직 identifier가 발견되지 않은 경우
-        found = lookup_sym_table(identifier, here->index);  // 새로운 함수를 사용하여 비교
-        if (!found) {
-            here = here->next;  // linked list의 다음 identifier로 이동
+    // hash_ident 값이 NULL이라면, 해당 identifier가 해시테이블에 저장된 적이 없다는 뜻
+
+    // lookup_sym_table 함수를 통해 심볼테이블의 hash_ident.index 번째 인덱스에 identifier가 저장되어있는지 확인 후 bool 값 return
+    // isExist가 false라면 연결된 다음 identifier를 hash_ident에 저장 후 다시 반복
+    while (hash_ident != NULL && !isExist) {	
+        isExist = lookup_sym_table(identifier, hash_ident->index); 
+        if (!isExist) {
+            hash_ident = hash_ident->next; 
         }
     }
-    
     printf("identifier: %s\n", identifier);
-    printf("4\n");
 
-    if (here != NULL) {
-        struct Ident sym_ident = sym_table[here->index];     
+    if (hash_ident == NULL){
+        // 처리해주기
+    }
 
-        if (sym_ident.ident_type == NULL || strcmp(sym_ident.ident_type, "none") == 0) {
-            printf("5\n");
-            strncpy_s(sym_ident.ident_type, sizeof(sym_ident.ident_type), type, _TRUNCATE);	// identifier의 type을 저장
-            printf("6\n");
-            sym_ident.ident_type[sizeof(sym_ident.ident_type) - 1] = '\0'; // Ensure null termination
-            printf("7\n");
-            sym_table[here->index] = sym_ident;
-            printf("sym_ident.ident_type: %s", sym_ident.ident_type);
-        } else {
-            printf("8\n");
-            if (sym_ident.linenumber != currlinenum) {
-                printf("Already declared\n");
-            }
+    // sym_table에서 identifier 정보 가져오기
+    struct Ident sym_ident = sym_table[hash_ident->index];     
+
+    // identifier의 type 정보가 NULL이거나 "none"이라면 identifier의 type 정보를 업데이트
+    if (sym_ident.ident_type == NULL || strcmp(sym_ident.ident_type, "none") == 0) {
+        strncpy_s(sym_ident.ident_type, sizeof(sym_ident.ident_type), type, _TRUNCATE);	
+        sym_ident.ident_type[sizeof(sym_ident.ident_type) - 1] = '\0'; 
+        sym_table[hash_ident->index] = sym_ident;
+        printf("sym_ident.ident_type: %s", sym_ident.ident_type);
+    } 
+    else {
+        if (sym_ident.linenumber != currlinenum) {
+            printf("Already declared\n");
         }
     }
-    printf("defineIdentType complete\n");
+    printf("updateIdentType complete\n");
 }
 
-void defineReturnType(int returntype, const char *identifier)
+void updateReturnType(int returntype, const char *identifier)
 {
-   printf("-------------------------defineReturnType-------------------------\n");
+   printf("-------------------------updateReturnType-------------------------\n");
     int length = strlen(identifier);
 
     // 해당 identifier의 해시코드 구하기
-    int hashcode = divisionMethod(identifier, HASH_TABLE_SIZE);
+    int hashValue = divisionMethod(identifier, HASH_TABLE_SIZE);
 
-    HTpointer here = lookup_hash_table(identifier, hashcode);
-    bool found = false; 	// Hash Table을 읽기 전, false로 초기화
+    HTpointer hash_ident = lookup_hash_table(identifier, hashValue);
+    bool isExist = false; 	// Hash Table을 읽기 전, false로 초기화
 
     // hash code 위치에 어떠한 문자라도 존재하는 경우
-    while (here != NULL && !found) {	// 현재 가리키는 위치에 문자가 있고 아직 identifier가 발견되지 않은 경우
-        found = lookup_sym_table(identifier, here->index);  // 새로운 함수를 사용하여 비교
-        if (!found) {
-            here = here->next;  // linked list의 다음 identifier로 이동
+    while (hash_ident != NULL && !isExist) {	// 현재 가리키는 위치에 문자가 있고 아직 identifier가 발견되지 않은 경우
+        isExist = lookup_sym_table(identifier, hash_ident->index);  // 새로운 함수를 사용하여 비교
+        if (!isExist) {
+            hash_ident = hash_ident->next;  // linked list의 다음 identifier로 이동
         }
     }
-    printf("3\n");
+    
+    if (hash_ident != NULL) {
+        // 처리해주기
+    }
 
-    if (here != NULL) {
-        struct Ident sym_ident = sym_table[here->index];   
-        if (strcmp(sym_ident.ident_type, "function") == 0) {	// type이 function name인 경우
-             printf("4\n");
-            snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "%d", returntype);	// 매개변수로 받은 returntype 설정
-            printf("sym_ident.return_type: %s", sym_ident.return_type);
-            sym_table[here->index] = sym_ident;
-        } else {
-            printf("5\n");
-            snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "-1");	// function name이 아닌 경우는 -1로 설정
-            sym_table[here->index] = sym_ident;
-        }
+    // identifier의 type 정보가 function일 경우에만 return값 정보 업데이트
+    struct Ident sym_ident = sym_table[hash_ident->index];   
+    if (strcmp(sym_ident.ident_type, "function") == 0) {	// type이 function name인 경우
+        snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "%d", returntype);	// 매개변수로 받은 returntype 설정
+        printf("sym_ident.return_type: %s", sym_ident.return_type);
+        sym_table[hash_ident->index] = sym_ident;
+    } 
+    else {
+        snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "-1");	// function name이 아닌 경우는 -1로 설정
+        sym_table[hash_ident->index] = sym_ident;
     }
-    printf("defineReturnType complete\n");
+    printf("updateReturnType complete\n");
 }

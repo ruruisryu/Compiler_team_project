@@ -59,6 +59,8 @@
 
 extern void semantic(int);
 extern void ReportParserError(char* message);
+void updateReturnType(int returntype, const char *identifier); 
+void updateIdentType(const char *type, const char *identifier);
 
 
 #ifndef YYLTYPE
@@ -1000,8 +1002,8 @@ case 26:
 { semantic(15); ;
     break;}
 case 27:
-#line 50 "parser.y"
-{ semantic(16); ;
+#line 61 "parser.y"
+{ semantic(16); defineIdentType("function", identStr); defineReturnType(returnType, identStr);;
     break;}
 case 29:
 #line 52 "parser.y"
@@ -1092,11 +1094,11 @@ case 52:
 { yyerrok; ReportParserError("init_declarator"); ;
     break;}
 case 54:
-#line 78 "parser.y"
-{ semantic(33); ;
+#line 88 "parser.y"
+{ semantic(33); defineIdentType("int scalar variable", identStr);;
     break;}
 case 56:
-#line 80 "parser.y"
+#line 90 "parser.y"
 { semantic(34); ;
     break;}
 case 58:
@@ -1591,4 +1593,91 @@ yyerrhandle:
 void semantic(int n)
 {
    // printf("reduced rule number = %d\n", n);
+}
+
+
+/* void ReportParserError(char* message, in)
+{
+   printf("--------------------- %s %d\n", message);
+} */
+
+
+void defineIdentType(const char *type, const char *identifier)
+{
+    printf("-------------------------defineIdentType-------------------------\n");
+    int length = strlen(identifier);
+
+    // 해당 identifier의 해시코드 구하기
+    int hashcode = divisionMethod(identifier, HASH_TABLE_SIZE);
+
+    HTpointer here = lookup_hash_table(identifier, hashcode);
+    bool found = false; 	// Hash Table을 읽기 전, false로 초기화
+    
+
+    // hash code 위치에 어떠한 문자라도 존재하는 경우
+    while (here != NULL && !found) {	// 현재 가리키는 위치에 문자가 있고 아직 identifier가 발견되지 않은 경우
+        found = lookup_sym_table(identifier, here->index);  // 새로운 함수를 사용하여 비교
+        if (!found) {
+            here = here->next;  // linked list의 다음 identifier로 이동
+        }
+    }
+    
+    printf("identifier: %s\n", identifier);
+    printf("4\n");
+
+    if (here != NULL) {
+        struct Ident sym_ident = sym_table[here->index];     
+
+        if (sym_ident.ident_type == NULL || strcmp(sym_ident.ident_type, "none") == 0) {
+            printf("5\n");
+            strncpy_s(sym_ident.ident_type, sizeof(sym_ident.ident_type), type, _TRUNCATE);	// identifier의 type을 저장
+            printf("6\n");
+            sym_ident.ident_type[sizeof(sym_ident.ident_type) - 1] = '\0'; // Ensure null termination
+            printf("7\n");
+            sym_table[here->index] = sym_ident;
+            printf("sym_ident.ident_type: %s", sym_ident.ident_type);
+        } else {
+            printf("8\n");
+            if (sym_ident.linenumber != currlinenum) {
+                printf("Already declared\n");
+            }
+        }
+    }
+    printf("defineIdentType complete\n");
+}
+
+void defineReturnType(int returntype, const char *identifier)
+{
+   printf("-------------------------defineReturnType-------------------------\n");
+    int length = strlen(identifier);
+
+    // 해당 identifier의 해시코드 구하기
+    int hashcode = divisionMethod(identifier, HASH_TABLE_SIZE);
+
+    HTpointer here = lookup_hash_table(identifier, hashcode);
+    bool found = false; 	// Hash Table을 읽기 전, false로 초기화
+
+    // hash code 위치에 어떠한 문자라도 존재하는 경우
+    while (here != NULL && !found) {	// 현재 가리키는 위치에 문자가 있고 아직 identifier가 발견되지 않은 경우
+        found = lookup_sym_table(identifier, here->index);  // 새로운 함수를 사용하여 비교
+        if (!found) {
+            here = here->next;  // linked list의 다음 identifier로 이동
+        }
+    }
+    printf("3\n");
+
+    if (here != NULL) {
+        struct Ident sym_ident = sym_table[here->index];   
+        if (strcmp(sym_ident.ident_type, "function") == 0) {	// type이 function name인 경우
+             printf("4\n");
+            snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "%d", returntype);	// 매개변수로 받은 returntype 설정
+            printf("sym_ident.return_type: %s", sym_ident.return_type);
+            sym_table[here->index] = sym_ident;
+        } else {
+            printf("5\n");
+            snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "-1");	// function name이 아닌 경우는 -1로 설정
+            sym_table[here->index] = sym_ident;
+        }
+    }
+    printf("defineReturnType complete\n");
 }

@@ -35,10 +35,10 @@ void init_sym_table() {
 void print_sym_table() {
     int i;
     printf("\nSymbol Table\n");
-    printf("Index\tStrPool\tLength\tLine\tSymbol\n");
+    printf("Index\tLine\tSymbol\tType\t\tParameter\tReturnType\n");
     for (i = 0; i < SYM_TABLE_SIZE; i++) {
         if (sym_table[i].strpool_idx != -1) {
-            printf("[%d]\t%d\t%d\t%d\t%s\t%s\t%s\t%s\n", i, sym_table[i].strpool_idx, sym_table[i].len, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, sym_table[i].ident_type, sym_table[i].param, sym_table[i].return_type);
+            printf("[%d]\t%d\t%s\t%s\t\t%s\t%s\n", i, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, sym_table[i].ident_type, sym_table[i].param, sym_table[i].return_type);
         }
     }
 }
