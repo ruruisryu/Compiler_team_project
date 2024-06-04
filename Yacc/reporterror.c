@@ -33,7 +33,7 @@ void ReportError(ERRORtypes err)
 
 void ReportParserError(char* message) {
 	error_cnt++;
-	printf("--------------------- %s %d\n", message, lineNumber-1);
+	printf("--------------------- %s %d\n", message, lineNumber);
 }
 
 void yyerror(char* s) {
