@@ -10,18 +10,25 @@ char separators[] = " ,;\t\n\r\n";
 char str_pool[MAX_STR_POOL];
 // sym_table ����
 // StringPoolIndex | Length | Line
-int sym_table[SYM_TABLE_SIZE][3];
 
 #define isLetter(x) ( ((x) >= 'a' && (x) <='z') || ((x) >= 'A' && (x) <= 'Z') || ((x) == '_')) 
 #define isDigit(x) ( (x) >= '0' && (x) <= '9' )
 
-HTpointer HT[HASH_TABLE_SIZE];
-
 void init_sym_table() {
     int i;
     for (i = 0; i < SYM_TABLE_SIZE; i++) {
-        sym_table[i][0] = -1;
-        sym_table[i][1] = -1;
+        sym_table[i].strpool_idx = -1;
+        sym_table[i].len = -1;
+        sym_table[i].linenumber = lineNumber;
+        strncpy_s(sym_table[i].ident_type, sizeof(sym_table[i].ident_type), "none", _TRUNCATE);
+        strncpy_s(sym_table[i].param, sizeof(sym_table[i].param), "none", _TRUNCATE);
+        strncpy_s(sym_table[i].return_type, sizeof(sym_table[i].return_type), "none", _TRUNCATE);
+
+
+        // Ensure null-termination
+        sym_table[i].ident_type[sizeof(sym_table[i].ident_type) - 1] = '\0';
+        sym_table[i].param[sizeof(sym_table[i].param) - 1] = '\0';
+        sym_table[i].return_type[sizeof(sym_table[i].return_type) - 1] = '\0';
     }
 }
 
@@ -30,8 +37,8 @@ void print_sym_table() {
     printf("\nSymbol Table\n");
     printf("Index\tStrPool\tLength\tLine\tSymbol\n");
     for (i = 0; i < SYM_TABLE_SIZE; i++) {
-        if (sym_table[i][0] != -1) {
-            printf("[%d]\t%d\t%d\t%d\t%s\n", i, sym_table[i][0], sym_table[i][1], sym_table[i][2], str_pool+sym_table[i][0]);
+        if (sym_table[i].strpool_idx != -1) {
+            printf("[%d]\t%d\t%d\t%d\t%s\t%s\t%s\t%s\n", i, sym_table[i].strpool_idx, sym_table[i].len, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, sym_table[i].ident_type, sym_table[i].param, sym_table[i].return_type);
         }
     }
 }
@@ -41,12 +48,20 @@ HTpointer lookup_hash_table(char* sym, int hscode) {
 
     // ü�̴׵� ����Ʈ�� Ž��
     while (entry != NULL) {
-        if (strcmp(str_pool+(sym_table[entry->index][0]), sym) == 0) {
+        if (strcmp(str_pool+(sym_table[entry->index].strpool_idx), sym) == 0) {
             return entry; // ã�� �׸� ��ȯ
         }
         entry = entry->next;
     }
     return NULL; // �׸��� ã�� ���� ���
+}
+
+// symbol table�� idx�� ����� symbol�� sym�� �Ȱ��� �̸��� ���� �ִ��� Ȯ���ؼ� ��ȯ
+bool lookup_sym_table(char* sym, int idx) {
+    if (strcmp(str_pool + (sym_table[idx].strpool_idx), sym) == 0) {
+        return true;
+    }
+    return false;
 }
 
 void add_hash_table(int id_index, int hscode) {
@@ -89,6 +104,7 @@ int sym_table_index = 0;
 int str_pool_index = 0;
 void SymbolTable(char* ident, int len) {
     int hash_value = 0;
+    strcpy_s(identStr, sizeof(identStr), ident);
 
     if (str_pool_index + len > MAX_STR_POOL) {
         //�ؽ� ���
@@ -123,9 +139,9 @@ void SymbolTable(char* ident, int len) {
 
         add_hash_table(sym_table_index, hash_value);
 
-        sym_table[sym_table_index][0] = str_pool_index;
-        sym_table[sym_table_index][1] = len;
-        sym_table[sym_table_index++][2] = lineNumber;
+        sym_table[sym_table_index].strpool_idx = str_pool_index;
+        sym_table[sym_table_index].len = len;
+        sym_table[sym_table_index++].linenumber = lineNumber;
 
         str_pool[str_pool_index + len] = '\0';
         str_pool_index += len+1;
