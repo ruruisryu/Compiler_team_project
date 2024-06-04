@@ -18,8 +18,10 @@ typedef struct Ident {
     int len;
     int linenumber;
     char ident_type[MAX_IDENTYPE_LENGTH];
-    char param[MAX_PARAMS_LENGTH];
+    // char param[MAX_PARAMS_LENGTH];
     char return_type[MAX_RETYPE_LENGTH];
+    int* param;
+    int param_count;
 };
 
 typedef struct HTentry* HTpointer;

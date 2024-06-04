@@ -18,6 +18,7 @@ HTpointer getIdentHash(const char *identifier);
 int checkIdentExists(const char *identifier);
 void updateReturnType(int returntype, const char *identifier); 
 void updateIdentType(const char *type, const char *identifier);
+void updateFunctionParameter(int paramtype, const char *function_name);
 
 int returnType = 0;
 unsigned int currlinenum;
@@ -61,7 +62,7 @@ type_qualifier             : TCONST                                             
 type_specifier             : TINT                                                            { semantic(14); returnType = 1;}
                            | TFLOAT                                                          { returnType = 2;}
                            | TVOID                                                           { semantic(15); returnType = 0;};
-function_name              : TIDENT                                                          { semantic(16); updateIdentType("function", identStr); updateReturnType(returnType, identStr);};
+function_name              : TIDENT                                                          { semantic(16); updateIdentType("function", identStr); updateReturnType(returnType, identStr); updateFunctionParameter(1, identStr); updateFunctionParameter(2, identStr);}; // 테스트용 functionparameter 호출
                            | TERROR
                            |                                                                 {yyerrok; ReportParserError("NO_FUNC_NAME")};
 formal_param               : TLPAREN opt_formal_param TRPAREN                                { semantic(17); }
@@ -279,4 +280,28 @@ void updateReturnType(int returntype, const char *identifier)
       sym_table[hash_ident->index] = sym_ident;
    }
    printf("updateReturnType complete\n");
+}
+
+void updateFunctionParameter(int paramtype, const char *function_name)
+{
+   printf("-------------------------updateFunctionParameter-------------------------\n");
+   printf("paramtype: %d, function_name: %s\n", paramtype, function_name);
+   HTpointer hash_ident = getIdentHash(function_name);    
+    
+   if (hash_ident != NULL) {
+        // 처리해주기
+   }
+   // function_name type 정보가 function일 경우에만 return값 정보 업데이트
+   struct Ident sym_ident = sym_table[hash_ident->index];   
+   if (strcmp(sym_ident.ident_type, "function") == 0) {	// type이 function name인 경우
+      sym_ident.param_count++;
+      sym_ident.param = (int*)realloc(sym_ident.param, (sym_ident.param_count)*sizeof(int));
+      sym_ident.param[sym_ident.param_count-1] = paramtype;
+      
+      sym_table[hash_ident->index] = sym_ident;
+   } 
+   else {
+      // 처리해주기
+   }
+   printf("updateFunctionParameter complete\n");
 }
