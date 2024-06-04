@@ -60,6 +60,7 @@ type_specifier             : TINT                                               
                            | TVOID                                                           { semantic(15); returnType = 0;};
 function_name              : TIDENT                                                          { semantic(16); defineIdentType("function", identStr); defineReturnType(returnType, identStr);};
                            | TERROR
+                           |                                                                 {yyerrok; ReportParserError("NO_FUNC_NAME")};
 formal_param               : TLPAREN opt_formal_param TRPAREN                                { semantic(17); }
                            | TLPAREN opt_formal_param error                                  { yyerrok; ReportParserError("formal_param"); };
 opt_formal_param           : formal_param_list                                               { semantic(18); }
@@ -123,27 +124,44 @@ assignment_exp             : logical_or_exp                                     
                            | unary_exp TSUBASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_SUBASSIGN_EXP"); }
                            | unary_exp TMULASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_MULTIASSIGN_EXP"); }
                            | unary_exp TDIVASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_DIVASSIGN_EXP"); }
-                           | unary_exp TMODASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_MODASSIGN_EXP"); }
-                                                                                             ;
+                           | unary_exp TMODASSIGN error                                      { yyerrok; ReportParserError("NO_RIGHT_MODASSIGN_EXP"); } 
+                           ;
 logical_or_exp             : logical_and_exp                                                 { semantic(61); }
                            | logical_or_exp TOR logical_and_exp                              { semantic(62); };
+                           | logical_or_exp TOR error                                        { yyerrok; ReportParserError("NO_RIGHT_LOGICAL_OR_EXP");};
 logical_and_exp            : equality_exp                                                    { semantic(63); }
                            | logical_and_exp TAND equality_exp                               { semantic(64); };
+                           | logical_and_exp TAND error                                      { yyerrok; ReportParserError("NO_RIGHT_LOGICAL_AND_EXP");};
 equality_exp               : relational_exp                                                  { semantic(65); }
                            | equality_exp TEQUAL relational_exp                              { semantic(66); }
-                           | equality_exp TNOTEQU relational_exp                             { semantic(67); };
+                           | equality_exp TNOTEQU relational_exp                             { semantic(67); }
+                           | equality_exp TEQUAL error                                       { yyerrok; ReportParserError("NO_RIGHT_TEQUAL_EXP");}
+                           | equality_exp TNOTEQU error                                      { yyerrok; ReportParserError("NO_RIGHT_TNOTEQU_EXP");}
+                           ;
 relational_exp             : additive_exp                                                    { semantic(68); }
                            | relational_exp TGREAT additive_exp                              { semantic(69); }
                            | relational_exp TLESS additive_exp                               { semantic(70); }
                            | relational_exp TGREATE additive_exp                             { semantic(71); }
-                           | relational_exp TLESSE additive_exp                              { semantic(72); };
+                           | relational_exp TLESSE additive_exp                              { semantic(72); }
+                           | relational_exp TGREAT error                                     { yyerrok; ReportParserError("NO_RIGHT_TGREAT_EXP");}
+                           | relational_exp TLESS error                                      { yyerrok; ReportParserError("NO_RIGHT_TELSE_EXP");}
+                           | relational_exp TGREATE error                                    { yyerrok; ReportParserError("NO_RIGHT_TGREATE_EXP");}
+                           | relational_exp TLESSE error                                     { yyerrok; ReportParserError("NO_RIGHT_TLESSE_EXP");}
+                           ;
 additive_exp               : multiplicative_exp                                              { semantic(73); }
                            | additive_exp TADD multiplicative_exp                            { semantic(74); }
-                           | additive_exp TSUB multiplicative_exp                            { semantic(75); };
+                           | additive_exp TSUB multiplicative_exp                            { semantic(75); }
+                           | additive_exp TADD error                                         { yyerrok; ReportParserError("NO_RIGHT_TADD_EXP");}
+                           | additive_exp TSUB error                                         { yyerrok; ReportParserError("NO_RIGHT_TSUB_EXP");}
+                           ;
 multiplicative_exp         : unary_exp                                                       { semantic(76); }
                            | multiplicative_exp TMUL unary_exp                               { semantic(77); }
                            | multiplicative_exp TDIV unary_exp                               { semantic(78); }
-                           | multiplicative_exp TMOD unary_exp                               { semantic(79); };
+                           | multiplicative_exp TMOD unary_exp                               { semantic(79); }
+                           | multiplicative_exp TMUL error                                   { yyerrok; ReportParserError("NO_RIGHT_TMUL_EXP"); }
+                           | multiplicative_exp TDIV error                                   { yyerrok; ReportParserError("NO_RIGHT_TDIV_EXP");}
+                           | multiplicative_exp TMOD error                                   { yyerrok; ReportParserError("NO_RIGHT_TMOD_EXP"); }
+                           ;
 unary_exp                  : postfix_exp                                                     { semantic(80); }
                            | TSUB unary_exp                                                  { semantic(81); }
                            | TNOT unary_exp                                                  { semantic(82); }
