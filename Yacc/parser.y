@@ -89,8 +89,8 @@ init_dcl_list              : init_declarator                                    
                            | init_dcl_list TCOMMA init_declarator                            { semantic(30); };
 init_declarator            : declarator                                                      { if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
                                                                                                 else if (returnType ==2) updateIdentType("float scalar variable", identStr);  } // float scalar variable
-                           | declarator TASSIGN TNUMBER                                      { semantic(32); }
-                           | declarator TASSIGN TFNUMBER            
+                           | declarator TASSIGN TNUMBER                                      { if (getIdentType(identStr) != 1) ReportParserError("type mismatch in initialization"); }
+                           | declarator TASSIGN TFNUMBER                                     { if (getIdentType(identStr) != 2) ReportParserError("type mismatch in initialization"); }
                            | declarator TASSIGN error                                        { yyerrok; ReportParserError("init_declarator"); };
                            | function_prototype                                              ;
 
@@ -168,11 +168,16 @@ additive_exp               : multiplicative_exp                                 
                            | additive_exp TSUB error                                         { yyerrok; ReportParserError("NO_RIGHT_TSUB_EXP");}
                            ;
 multiplicative_exp         : unary_exp                                                       { semantic(76); }
-                           | TNUMBER
-                           | TFNUMBER
+                           | TNUMBER                                                         { if (getIdentType(identStr) != 1) ReportParserError("type mismatch in assignment"); }
+                           | TFNUMBER                                                        { if (getIdentType(identStr) != 2) ReportParserError("type mismatch in assignment"); }
                            | multiplicative_exp TMUL unary_exp                               { semantic(77); }
                            | multiplicative_exp TDIV unary_exp                               { semantic(78); }
                            | multiplicative_exp TMOD unary_exp                               { semantic(79); }
+                           | multiplicative_exp TMUL TNUMBER                                 { semantic(77); }
+                           | multiplicative_exp TDIV TNUMBER                                 { semantic(78); }
+                           | multiplicative_exp TMOD TNUMBER                                 { semantic(79); }
+                           | multiplicative_exp TMUL TFNUMBER                                { semantic(77); }
+                           | multiplicative_exp TDIV TFNUMBER                                { semantic(78); }
                            | multiplicative_exp TMUL error                                   { yyerrok; ReportParserError("NO_RIGHT_TMUL_EXP"); }
                            | multiplicative_exp TDIV error                                   { yyerrok; ReportParserError("NO_RIGHT_TDIV_EXP"); }
                            | multiplicative_exp TMOD error                                   { yyerrok; ReportParserError("NO_RIGHT_TMOD_EXP"); }
@@ -226,6 +231,20 @@ HTpointer getIdentHash(const char *identifier)
       }
    }
    return hash_ident;
+}
+
+int getIdentType(const char *identifier)
+{
+   HTpointer hash_ident = getIdentHash(identifier);
+   struct Ident sym_ident = sym_table[hash_ident->index];  
+   char* identType = sym_ident.ident_type;
+   
+   if (strcmp(identType, "int scalar variable") == 0)
+      return 1;
+   else if (strcmp(identType, "float scalar variable") == 0)
+      return 2;
+   else
+      return 0;
 }
 
 int checkIdentExists(const char *identifier)
