@@ -67,11 +67,8 @@ opt_formal_param           : formal_param_list                                  
                            |                                                                 { semantic(19); };
 formal_param_list          : param_dcl                                                       { semantic(20); }
                            | formal_param_list TCOMMA param_dcl                              { semantic(21); };
-param_dcl                  : dcl_specifier declarator                                        { UpdateIdentType("int scalar", identStr); }
-                           | dcl_specifier TIDENT                                            { UpdateIdentType("int scalar variable", identStr); }
-                           | dcl_specifier function_prototype                                { UpdateIdentType("function", identStr); }
-                           | dcl_specifier TIDENT TLBRACKET opt_number TRBRACKET             { UpdateIdentType("int array", identStr); }                               
-                           ;
+param_dcl                  : dcl_specifier declarator                                        { semantic(22); }
+                           | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE TRBRACE                                                 { semantic(23); }
                            | TLBRACE block_item_list TRBRACE                                 { semantic(23); }
                            | TLBRACE error                                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); }
@@ -89,9 +86,9 @@ init_declarator            : declarator                                         
                            | declarator TASSIGN TFNUMBER            
                            | declarator TASSIGN error                                        { yyerrok; ReportParserError("init_declarator"); };
                            | function_prototype                                              ;
-declarator                 : TIDENT                                                          { semantic(33); updateIdentType("int scalar variable", identStr);}  // int scalar variable
+declarator                 : TIDENT                                                          { semantic(33); updateIdentType("scalar variable", identStr);}  // int scalar variable
                            | TERROR
-                           | TIDENT TLBRACKET opt_number TRBRACKET                           { UpdateIdentType("int array", identStr);}; // 배열 선언
+                           | TIDENT TLBRACKET opt_number TRBRACKET                           { semantic(34);}; // 배열 선언
                            | TERROR TLBRACKET opt_number TRBRACKET 
                            | TIDENT TLBRACKET opt_number error                               { yyerrok; ReportParserError("declarator MISSING RBRAKET"); }  
                            | TERROR TLBRACKET opt_number error                               ;
