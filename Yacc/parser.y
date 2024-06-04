@@ -138,10 +138,10 @@ unary_exp                  : postfix_exp                                        
                            | TINC unary_exp                                                  { semantic(83); }
                            | TDEC unary_exp                                                  { semantic(84); };
 postfix_exp                : primary_exp                                                     { semantic(85); }
-                           | postfix_exp TLBRACKET expression TRBRACKET                      { semantic(86); }
-                           | postfix_exp TLPAREN opt_actual_param TRPAREN                    { semantic(87); }
-                           | postfix_exp TINC                                                { semantic(88); }
-                           | postfix_exp TDEC                                                { semantic(89); }
+                           | postfix_exp TLBRACKET expression TRBRACKET                      { semantic(86); } // 배열 인덱스 접근
+                           | postfix_exp TLPAREN opt_actual_param TRPAREN                    { semantic(87); } // 함수 호출
+                           | postfix_exp TINC                                                { semantic(88); } // a++
+                           | postfix_exp TDEC                                                { semantic(89); } // a--
                            | postfix_exp TLBRACKET expression error                          { yyerrok; ReportParserError("postfix_exp"); }
                            | postfix_exp TLPAREN opt_actual_param error                      { yyerrok; ReportParserError("postfix_exp"); };
 opt_actual_param           : actual_param                                                    { semantic(90); }
@@ -150,8 +150,9 @@ actual_param               : actual_param_list                                  
 actual_param_list          : assignment_exp                                                  { semantic(93); }
                            | actual_param_list TCOMMA assignment_exp                         { semantic(94); };
 primary_exp                : TIDENT                                                          { semantic(95); }
-                           | TERROR
-                           | TNUMBER                                                         { semantic(96); }                                  
+                           | TERROR                                                          
+                           | TNUMBER                                                         { semantic(96); }   
+                           | TFNUMBER                               
                            | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp"); }
                            | TLPAREN expression TRPAREN                                      { semantic(97); };
 %%  

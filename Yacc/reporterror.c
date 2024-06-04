@@ -36,13 +36,13 @@ void ReportError(ERRORtypes err)
 
 void ReportParserError(char* message) {
 	error_cnt++;
-	printf("--------------------- (line: %d) %s\n", message, lineNumber-1);
+	printf("(line: %d) %s\n", lineNumber - 1, message);
 }
 
 void PrintBracketError(char* bracketType, int diff) {
 	diff = abs(diff);
 	error_cnt += diff;
-	printf("--------------------- %s mismatch : %d\n", bracketType, diff);
+	printf("%s mismatch : %d\n", bracketType, diff);
 }
 
 void ReportBracketError() {
