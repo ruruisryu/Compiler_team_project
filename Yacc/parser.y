@@ -12,6 +12,8 @@
 
 extern void semantic(int);
 extern void ReportParserError(char* message);
+HTpointer getIdentHash(const char *identifier);
+bool checkIdentExists(const char *identifier);
 void updateReturnType(int returntype, const char *identifier); 
 void updateIdentType(const char *type, const char *identifier);
 
@@ -179,7 +181,7 @@ opt_actual_param           : actual_param                                       
 actual_param               : actual_param_list                                               { semantic(92); };
 actual_param_list          : assignment_exp                                                  { semantic(93); }
                            | actual_param_list TCOMMA assignment_exp                         { semantic(94); };
-primary_exp                : TIDENT                                                          { semantic(95); }
+primary_exp                : TIDENT                                                          { } 
                            | TERROR                                                          
                            | TNUMBER                                                         { semantic(96); }   
                            | TFNUMBER                               
@@ -198,28 +200,44 @@ void semantic(int n)
    printf("--------------------- %s %d\n", message);
 } */
 
+HTpointer getIdentHash(const char *identifier)
+{
+   // 해당 identifier의 해시코드 구하기
+   int hashValue = divisionMethod(identifier, HASH_TABLE_SIZE);
+   // 인식된 identifier의 해시값으로 해시테이블과 심볼테이블에 접근해 identifier가 저장되어있는지 확인
+   HTpointer hash_ident = lookup_hash_table(identifier, hashValue);
+   bool isExist = false; 	// Hash Table을 읽기 전, false로 초기화
+
+   // hash_ident 값이 NULL이라면, 해당 identifier가 해시테이블에 저장된 적이 없다는 뜻
+
+   // lookup_sym_table 함수를 통해 심볼테이블의 hash_ident.index 번째 인덱스에 identifier가 저장되어있는지 확인 후 bool 값 return
+   // isExist가 false라면 연결된 다음 identifier를 hash_ident에 저장 후 다시 반복
+   while (hash_ident != NULL && !isExist) {	// 현재 가리키는 위치에 문자가 있고 아직 identifier가 발견되지 않은 경우
+      isExist = lookup_sym_table(identifier, hash_ident->index);  // 새로운 함수를 사용하여 비교
+      if (!isExist) {
+         hash_ident = hash_ident->next;  // linked list의 다음 identifier로 이동
+      }
+   }
+   return hash_ident;
+}
+
+bool checkIdentExists(const char *identifier)
+{
+   HTpointer hash_ident = getIdentHash(identifier);
+   if (hash_ident != NULL)
+   {
+      struct Ident sym_ident = sym_table[hash_ident->index];   
+      if (sym_ident.ident_type == NULL || strcmp(sym_ident.ident_type, "none") == 0) {
+         return true;
+      }
+   }
+   return false;
+}
 
 void updateIdentType(const char *type, const char *identifier)
 {
     printf("-------------------------updateIdentType-------------------------\n");
-    int length = strlen(identifier);
-
-    // 인식된 identifier의 해시값으로 해시테이블과 심볼테이블에 접근해 identifier가 저장되어있는지 확인
-    int hashValue = divisionMethod(identifier, HASH_TABLE_SIZE);
-    HTpointer hash_ident = lookup_hash_table(identifier, hashValue);
-
-    bool isExist = false;
-
-    // hash_ident 값이 NULL이라면, 해당 identifier가 해시테이블에 저장된 적이 없다는 뜻
-
-    // lookup_sym_table 함수를 통해 심볼테이블의 hash_ident.index 번째 인덱스에 identifier가 저장되어있는지 확인 후 bool 값 return
-    // isExist가 false라면 연결된 다음 identifier를 hash_ident에 저장 후 다시 반복
-    while (hash_ident != NULL && !isExist) {	
-        isExist = lookup_sym_table(identifier, hash_ident->index); 
-        if (!isExist) {
-            hash_ident = hash_ident->next; 
-        }
-    }
+    HTpointer hash_ident = getIdentHash(identifier); 
     printf("identifier: %s\n", identifier);
 
     if (hash_ident == NULL){
@@ -247,36 +265,22 @@ void updateIdentType(const char *type, const char *identifier)
 void updateReturnType(int returntype, const char *identifier)
 {
    printf("-------------------------updateReturnType-------------------------\n");
-    int length = strlen(identifier);
-
-    // 해당 identifier의 해시코드 구하기
-    int hashValue = divisionMethod(identifier, HASH_TABLE_SIZE);
-
-    HTpointer hash_ident = lookup_hash_table(identifier, hashValue);
-    bool isExist = false; 	// Hash Table을 읽기 전, false로 초기화
-
-    // hash code 위치에 어떠한 문자라도 존재하는 경우
-    while (hash_ident != NULL && !isExist) {	// 현재 가리키는 위치에 문자가 있고 아직 identifier가 발견되지 않은 경우
-        isExist = lookup_sym_table(identifier, hash_ident->index);  // 새로운 함수를 사용하여 비교
-        if (!isExist) {
-            hash_ident = hash_ident->next;  // linked list의 다음 identifier로 이동
-        }
-    }
+   HTpointer hash_ident = getIdentHash(identifier);    
     
-    if (hash_ident != NULL) {
+   if (hash_ident != NULL) {
         // 처리해주기
-    }
+   }
 
-    // identifier의 type 정보가 function일 경우에만 return값 정보 업데이트
-    struct Ident sym_ident = sym_table[hash_ident->index];   
-    if (strcmp(sym_ident.ident_type, "function") == 0) {	// type이 function name인 경우
-        snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "%d", returntype);	// 매개변수로 받은 returntype 설정
-        printf("sym_ident.return_type: %s", sym_ident.return_type);
-        sym_table[hash_ident->index] = sym_ident;
-    } 
-    else {
-        snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "-1");	// function name이 아닌 경우는 -1로 설정
-        sym_table[hash_ident->index] = sym_ident;
-    }
-    printf("updateReturnType complete\n");
+   // identifier의 type 정보가 function일 경우에만 return값 정보 업데이트
+   struct Ident sym_ident = sym_table[hash_ident->index];   
+   if (strcmp(sym_ident.ident_type, "function") == 0) {	// type이 function name인 경우
+      snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "%d", returntype);	// 매개변수로 받은 returntype 설정
+      printf("sym_ident.return_type: %s", sym_ident.return_type);
+      sym_table[hash_ident->index] = sym_ident;
+   } 
+   else {
+      snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "-1");	// function name이 아닌 경우는 -1로 설정
+      sym_table[hash_ident->index] = sym_ident;
+   }
+   printf("updateReturnType complete\n");
 }
