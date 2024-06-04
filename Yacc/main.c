@@ -110,4 +110,8 @@ void main()
 	print_sym_table();
 	print_hash_table();
 	printf("end of parser\n");
+
+	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
+		free(sym_table[i].param);
+	}
 }
