@@ -18,9 +18,14 @@ int checkIdentExists(const char *identifier);
 void updateReturnType(int returntype, const char *identifier); 
 void updateIdentType(const char *type, const char *identifier);
 void updateFunctionParameter(int paramtype, const char *function_name);
+void updateInvokedFuncArgs(int argument_type);
+bool isIllegalInvoke(const char *function_name);
 
 int returnType = 0;
 int flag = 0; // 1: True (param이면 true)
+
+int* invoked_func_args;
+int invoked_func_args_cnt = 0;
 %}
 
 %token TIDENT TNUMBER TCONST TELSE TIF	TEIF TINT TRETURN TVOID TWHILE
@@ -61,7 +66,19 @@ type_qualifier             : TCONST                                             
 type_specifier             : TINT                                                            { semantic(14); returnType = 1;}
                            | TFLOAT                                                          { returnType = 2;}
                            | TVOID                                                           { semantic(15); returnType = 0;};
-function_name              : TIDENT                                                          { semantic(16); updateIdentType("function", identStr); updateReturnType(returnType, identStr); updateFunctionParameter(1, identStr); updateFunctionParameter(2, identStr);}; // 테스트용 functionparameter 호출
+function_name              : TIDENT                                                          { semantic(16); 
+                                                                                                updateIdentType("function", identStr); 
+                                                                                                updateReturnType(returnType, identStr); 
+                                                                                                updateFunctionParameter(1, identStr); 
+                                                                                                updateFunctionParameter(2, identStr); 
+                                                                                                updateInvokedFuncArgs(1);
+                                                                                                updateInvokedFuncArgs(2);
+                                                                                                if(isIllegalInvoke(identStr)){
+                                                                                                   printf("true\n");}
+                                                                                                else{
+                                                                                                   printf("false\n");}
+                                                                                             }; // 테스트용 functionparameter 호출
+
                            | TERROR
                            |                                                                 {yyerrok; ReportParserError("NO_FUNC_NAME")};
 formal_param               : TLPAREN opt_formal_param TRPAREN                                { semantic(17); }
@@ -311,6 +328,7 @@ void updateReturnType(int returntype, const char *identifier)
       sym_table[hash_ident->index] = sym_ident;
    }
    printf("updateReturnType complete\n");
+   invoked_func_args = (int*)malloc(0);
 }
 
 void updateFunctionParameter(int paramtype, const char *function_name)
@@ -335,4 +353,46 @@ void updateFunctionParameter(int paramtype, const char *function_name)
       // 처리해주기
    }
    printf("updateFunctionParameter complete\n");
+}
+
+
+void updateInvokedFuncArgs(int argument_type){
+   printf("-------------------------updateInvokedFuncArgs-------------------------\n");
+   if(invoked_func_args == NULL){
+      printf("invoked_func_args is NULL \n");
+      return;
+   }
+   invoked_func_args = (int*)realloc(invoked_func_args, (++invoked_func_args_cnt)*sizeof(int));
+   invoked_func_args[invoked_func_args_cnt-1] = argument_type;
+   
+   printf("updateInvokedFuncArgs complete\n");
+}
+
+// 함수 정의와 일치하는 호출인지 확인하는 함수
+bool isIllegalInvoke(const char *function_name){
+   printf("-------------------------isIllegalInvoke-------------------------\n");
+   HTpointer hash_ident = getIdentHash(function_name);    
+    
+   if (hash_ident != NULL) {
+        // 처리해주기
+   }
+
+   // function_name의 type 정보가 function일 경우에만 비교
+   struct Ident sym_ident = sym_table[hash_ident->index];
+   if (strcmp(sym_ident.ident_type, "function") != 0){
+      free(invoked_func_args);
+      return true;
+   }  
+   if(sym_ident.param_count != invoked_func_args_cnt){
+      free(invoked_func_args);
+      return true;
+   }
+   for(int i=0; i<invoked_func_args_cnt; i++){
+      if(sym_ident.param[i] != invoked_func_args[i]){
+      free(invoked_func_args);
+         return true;
+      }
+   }
+   free(invoked_func_args);
+   return false;
 }
