@@ -15,7 +15,7 @@ extern void semantic(int);
 void ReportError(ERRORtypes err);
 extern void ReportParserError(char* message);
 HTpointer getIdentHash(const char *identifier);
-bool checkIdentExists(const char *identifier);
+int checkIdentExists(const char *identifier);
 void updateReturnType(int returntype, const char *identifier); 
 void updateIdentType(const char *type, const char *identifier);
 
@@ -162,7 +162,7 @@ multiplicative_exp         : unary_exp                                          
                            | multiplicative_exp TDIV unary_exp                               { semantic(78); }
                            | multiplicative_exp TMOD unary_exp                               { semantic(79); }
                            | multiplicative_exp TMUL error                                   { yyerrok; ReportParserError("NO_RIGHT_TMUL_EXP"); }
-                           | multiplicative_exp TDIV error                                   { yyerrok; ReportParserError("NO_RIGHT_TDIV_EXP");}
+                           | multiplicative_exp TDIV error                                   { yyerrok; ReportParserError("NO_RIGHT_TDIV_EXP"); }
                            | multiplicative_exp TMOD error                                   { yyerrok; ReportParserError("NO_RIGHT_TMOD_EXP"); }
                            ;
 unary_exp                  : postfix_exp                                                     { semantic(80); }
@@ -182,7 +182,7 @@ opt_actual_param           : actual_param                                       
 actual_param               : actual_param_list                                               { semantic(92); };
 actual_param_list          : assignment_exp                                                  { semantic(93); }
                            | actual_param_list TCOMMA assignment_exp                         { semantic(94); };
-primary_exp                : TIDENT                                                          { } 
+primary_exp                : TIDENT                                                          { if (!checkIdentExists(identStr)) { ReportParserError("invalid identifier"); }}
                            | TERROR                                                          
                            | TNUMBER                                                         { semantic(96); }   
                            | TFNUMBER                               
@@ -194,12 +194,6 @@ void semantic(int n)
 {
    // printf("reduced rule number = %d\n", n);
 }
-
-
-/* void ReportParserError(char* message, in)
-{
-   printf("--------------------- %s %d\n", message);
-} */
 
 HTpointer getIdentHash(const char *identifier)
 {
@@ -222,17 +216,17 @@ HTpointer getIdentHash(const char *identifier)
    return hash_ident;
 }
 
-bool checkIdentExists(const char *identifier)
+int checkIdentExists(const char *identifier)
 {
    HTpointer hash_ident = getIdentHash(identifier);
    if (hash_ident != NULL)
    {
       struct Ident sym_ident = sym_table[hash_ident->index];   
       if (sym_ident.ident_type == NULL || strcmp(sym_ident.ident_type, "none") == 0) {
-         return true;
+         return 0;
       }
    }
-   return false;
+   return 1;
 }
 
 void updateIdentType(const char *type, const char *identifier)
