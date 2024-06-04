@@ -19,6 +19,7 @@ void updateReturnType(int returntype, const char *identifier);
 void updateIdentType(const char *type, const char *identifier);
 
 int returnType = 0;
+int flag = 0; // 1: True (param이면 true)
 %}
 
 %token TIDENT TNUMBER TCONST TELSE TIF	TEIF TINT TRETURN TVOID TWHILE
@@ -70,7 +71,8 @@ formal_param_list          : param_dcl                                          
                            | formal_param_list TCOMMA param_dcl                              { semantic(21); }
                            | formal_param_list param_dcl error                               { yyerrok; ReportParserError("NO_COMMA"); }
                            ;
-param_dcl                  : dcl_specifier declarator                                        { semantic(22); }
+param_dcl                  : dcl_specifier declarator                                        {if (returnType==1) updateIdentType("int scalar parameter", identStr);  // int scalar variable
+                                                                                                else if (returnType ==2) updateIdentType("float scalar parameter", identStr); };
                            | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE TRBRACE                                                 { semantic(23); }
                            | TLBRACE block_item_list TRBRACE                                 { semantic(23); }
@@ -84,13 +86,16 @@ declaration                : dcl_spec init_dcl_list TSEMI                       
                            | dcl_spec init_dcl_list error                                    { yyerrok; ReportParserError("declaration MISSING SEMI"); };
 init_dcl_list              : init_declarator                                                 { semantic(29); }
                            | init_dcl_list TCOMMA init_declarator                            { semantic(30); };
-init_declarator            : declarator                                                      { semantic(31); }
+init_declarator            : declarator                                                      { if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
+                                                                                                else if (returnType ==2) updateIdentType("float scalar variable", identStr);  } // float scalar variable
                            | declarator TASSIGN TNUMBER                                      { semantic(32); }
                            | declarator TASSIGN TFNUMBER            
                            | declarator TASSIGN error                                        { yyerrok; ReportParserError("init_declarator"); };
                            | function_prototype                                              ;
-declarator                 : TIDENT                                                          {  if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
-                                                                                                else if (returnType ==2) updateIdentType("float scalar variable", identStr); } // float scalar variable 
+
+declarator                 : TIDENT                                                          { // if (returnType==1) updateIdentType("int scalar variable", identStr);  // int scalar variable
+                                                                                                //else if (returnType ==2) updateIdentType("float scalar variable", identStr); 
+                                                                                                } // float scalar variable 
                            | TERROR
                            | TIDENT TLBRACKET opt_number TRBRACKET                           { if (returnType==1) updateIdentType("int array variable", identStr); // int 배열 선언
                                                                                                else if (returnType==2) updateIdentType("float array variable", identStr);  }; //float 배열 선언
