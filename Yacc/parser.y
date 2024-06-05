@@ -124,7 +124,8 @@ init_declarator            : ident                                              
                                                                                                 if (getIdentType(identStr) != 2) reportParserError("type mismatch in initialization"); } 
                            | ident TASSIGN error                                             { yyerrok; reportParserError("init_declarator"); }
                            | array TASSIGN error                                             { yyerrok; reportParserError("init_declarator"); }
-                           | function_prototype                                              
+                           | function_prototype 
+                           | ident TASSIGN postfix_exp TLPAREN opt_actual_param TRPAREN                                              
                            ;
 ident                      : TIDENT                                                           
                            | TERROR
