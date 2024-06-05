@@ -383,30 +383,24 @@ void updateInvokedFuncArgs(int argument_type){
 }
 
 // 함수 정의와 일치하는 호출인지 확인하는 함수
-bool isIllegalInvoke(const char *function_name){
+void isIllegalInvoke(const char *function_name){
    printf("-------------------------isIllegalInvoke-------------------------\n");
    HTpointer hash_ident = getIdentHash(function_name);    
-    
-   if (hash_ident != NULL) {
-        // 처리해주기
-   }
-
-   // function_name의 type 정보가 function일 경우에만 비교
    struct Ident sym_ident = sym_table[hash_ident->index];
-   if (strcmp(sym_ident.ident_type, "function") != 0){
+
+   // function_name의 type 정보가 function이 아니거나 파라미터 개수가 맞지 않으면 에러 발생
+   if (strcmp(sym_ident.ident_type, "function") != 0 || sym_ident.param_count != invoked_func_args_cnt) {
+      ReportParserError("Invalid function call.");
       free(invoked_func_args);
-      return true;
-   }  
-   if(sym_ident.param_count != invoked_func_args_cnt){
-      free(invoked_func_args);
-      return true;
+      return;
    }
+   // 파라미터 타입 배열을 돌면서 일치하지 않는 파라미터 타입이 있다면 에러 발생
    for(int i=0; i<invoked_func_args_cnt; i++){
       if(sym_ident.param[i] != invoked_func_args[i]){
-      free(invoked_func_args);
-         return true;
+         ReportParserError("Invalid function call.");
+         free(invoked_func_args);
+         return;
       }
    }
    free(invoked_func_args);
-   return false;
 }
