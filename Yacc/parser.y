@@ -22,12 +22,23 @@ void updateInvokedFuncArgs(int argument_type);
 bool isIllegalInvoke(const char *function_name);
 
 int returnType = 0;
-int flag = 0; // 1: True (param이면 true)
+char currentFunctionName[1000]; // 함수 이름 저장용 전역 변수
 
 int* invoked_func_args;
 int invoked_func_args_cnt = 0;
-bool isArray = false; // 추가된 변수
 %}
+
+/*
+1 int scalar variable
+2 float scalar variable
+3 int array variable
+4 float array variable
+
+5 int scalar parameter
+6 float scalar parameter
+7 int array parameter
+8 float array parameter
+*/
 
 %token TIDENT TNUMBER TCONST TELSE TIF	TEIF TINT TRETURN TVOID TWHILE
 %token TADDASSIGN TSUBASSIGN TMULASSIGN TDIVASSIGN TMODASSIGN 	
@@ -51,33 +62,36 @@ function_header            : dcl_spec function_name formal_param                
 // formal_param: (int x, float y)                 / type_only_param: (int, float)
 function_prototype         : function_name type_only_param                                   { semantic(7); }
                            | function_name formal_param                                      { semantic(7); };
-type_only_param            : TLPAREN type_only_param_list TRPAREN                            { semantic(17); }
+type_only_param            : TLPAREN type_only_param_list TRPAREN                            
                            | TLPAREN type_only_param_list error                              { yyerrok; ReportParserError("type_only_param"); };
 type_only_param_list       : type_only_param_dcl                                             { semantic(20); }
                            | type_only_param_list TCOMMA type_only_param_dcl                 { semantic(21); }
                            | type_only_param_list TCOMMA param_dcl                           { semantic(21); }
                            | formal_param_list TCOMMA type_only_param_dcl                    { semantic(21); };
-type_only_param_dcl        : dcl_specifier                                                   { semantic(22); };
+type_only_param_dcl        : dcl_specifier                                                   { if (returnType ==1) updateFunctionParameter(5, currentFunctionName);   
+                                                                                               else if (returnType ==2) updateFunctionParameter(6, currentFunctionName); }
+                           ;
 dcl_spec                   : dcl_specifiers                                                  { semantic(8); };
 dcl_specifiers             : dcl_specifier                                                   { semantic(9); }
                            | dcl_specifiers dcl_specifier                                    { semantic(10); };
 dcl_specifier              : type_qualifier                                                  { semantic(11); }
                            | type_specifier                                                  { semantic(12); };
 type_qualifier             : TCONST                                                          { semantic(13); };
-type_specifier             : TINT                                                            { semantic(14); returnType = 1;}
+type_specifier             : TINT                                                            { semantic(14); returnType = 1; }
                            | TFLOAT                                                          { returnType = 2;}
-                           | TVOID                                                           { semantic(15); returnType = 0;};
+                           | TVOID                                                           { semantic(15);};
 function_name              : TIDENT                                                          { semantic(16); 
                                                                                                 updateIdentType("function", identStr); 
                                                                                                 updateReturnType(returnType, identStr); 
-                                                                                                updateFunctionParameter(1, identStr); 
-                                                                                                updateFunctionParameter(2, identStr); 
-                                                                                                updateInvokedFuncArgs(1);
-                                                                                                updateInvokedFuncArgs(2);
-                                                                                                if(isIllegalInvoke(identStr)){
-                                                                                                   printf("true\n");}
-                                                                                                else{
-                                                                                                   printf("false\n");}
+                                                                                                //updateFunctionParameter(1, identStr);
+                                                                                                // //updateFunctionParameter(2, identStr);
+                                                                                                // updateInvokedFuncArgs(1);
+                                                                                                // updateInvokedFuncArgs(2);
+                                                                                                // if(isIllegalInvoke(identStr)){
+                                                                                                //    printf("true\n");}
+                                                                                                // else{
+                                                                                                //    printf("false\n");}
+                                                                                                   strncpy(currentFunctionName, identStr,1000);
                                                                                              }; // 테스트용 functionparameter 호출
 
                            | TERROR
@@ -90,10 +104,10 @@ formal_param_list          : param_dcl                                          
                            | formal_param_list TCOMMA param_dcl                              { semantic(21); }
                            | formal_param_list param_dcl error                               { yyerrok; ReportParserError("NO_COMMA"); }
                            ;
-param_dcl                  : dcl_specifier ident                                             { if (returnType==1) updateIdentType("int scalar parameter", identStr);  
-                                                                                                else if (returnType ==2) updateIdentType("float scalar parameter", identStr); }
-                           | dcl_specifier array                                             { if (returnType==1) updateIdentType("int array parameter", identStr);  
-                                                                                                else if (returnType ==2) updateIdentType("float array parameter", identStr); }
+param_dcl                  : dcl_specifier ident                                             { if (returnType==1) {updateIdentType("int scalar parameter", identStr); updateFunctionParameter(5, currentFunctionName); } 
+                                                                                                else if (returnType ==2) {updateIdentType("float scalar parameter", identStr);  updateFunctionParameter(6, currentFunctionName);}} 
+                           | dcl_specifier array                                             { if (returnType==1) {updateIdentType("int array parameter", identStr); updateFunctionParameter(7, currentFunctionName);} 
+                                                                                                else if (returnType ==2) {updateIdentType("float array parameter", identStr); updateFunctionParameter(8, currentFunctionName);}}  
                            | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE TRBRACE                                                 { semantic(23); }
                            | TLBRACE block_item_list TRBRACE                                 { semantic(23); }
@@ -209,6 +223,11 @@ multiplicative_exp         : unary_exp                                          
                            | multiplicative_exp TMUL unary_exp                               { semantic(77); }
                            | multiplicative_exp TDIV unary_exp                               { semantic(78); }
                            | multiplicative_exp TMOD unary_exp                               { semantic(79); }
+                           | multiplicative_exp TMUL TNUMBER                                 { semantic(77); }
+                           | multiplicative_exp TDIV TNUMBER                                 { semantic(78); }
+                           | multiplicative_exp TMOD TNUMBER                                 { semantic(79); }
+                           | multiplicative_exp TDIV TFNUMBER                                { semantic(78); }
+                           | multiplicative_exp TMOD TFNUMBER                                { semantic(79); }
                            | multiplicative_exp TMUL error                                   { yyerrok; ReportParserError("NO_RIGHT_TMUL_EXP"); }
                            | multiplicative_exp TDIV error                                   { yyerrok; ReportParserError("NO_RIGHT_TDIV_EXP"); }
                            | multiplicative_exp TMOD error                                   { yyerrok; ReportParserError("NO_RIGHT_TMOD_EXP"); }
