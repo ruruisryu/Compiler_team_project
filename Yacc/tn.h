@@ -1,3 +1,4 @@
+#pragma once
 #ifndef YYSTYPE
 #define YYSTYPE int
 #endif

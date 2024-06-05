@@ -11,20 +11,22 @@
 #include "tn.h"
 
 extern int lineNumber; 
+extern const char* dataTypesChar[];
 extern void semantic(int);
 extern void ReportParserError(char* message);
 HTpointer getIdentHash(const char *identifier);
+int getIdentType(const char *identifier);
 int checkIdentExists(const char *identifier);
-void updateReturnType(int returntype, const char *identifier); 
-void updateIdentType(int type, const char *identifier);
-void updateFunctionParameter(int paramtype, const char *function_name);
-void updateInvokedFuncArgs(int argument_type);
-bool isIllegalInvoke(const char *function_name);
+void updateReturnType(dataType returntype, const char *identifier); 
+void updateIdentType(dataType type, const char *identifier);
+void updateFunctionParameter(dataType paramtype, const char *function_name);
+void updateInvokedFuncArgs(dataType argument_type);
+void isIllegalInvoke(const char *function_name);
 
 int returnType = 0;
 char currentFunctionName[1000]; // 함수 이름 저장용 전역 변수
 
-int* invoked_func_args;
+dataType* invoked_func_args;
 int invoked_func_args_cnt = 0;
 %}
 
@@ -68,8 +70,8 @@ type_only_param_list       : type_only_param_dcl                                
                            | type_only_param_list TCOMMA type_only_param_dcl                 { semantic(21); }
                            | type_only_param_list TCOMMA param_dcl                           { semantic(21); }
                            | formal_param_list TCOMMA type_only_param_dcl                    { semantic(21); };
-type_only_param_dcl        : dcl_specifier                                                   { if (returnType ==1) updateFunctionParameter(5, currentFunctionName);   
-                                                                                               else if (returnType ==2) updateFunctionParameter(6, currentFunctionName); }
+type_only_param_dcl        : dcl_specifier                                                   { if (returnType ==1) updateFunctionParameter(int_scalar_parameter, currentFunctionName);   
+                                                                                               else if (returnType ==2) updateFunctionParameter(float_scalar_parameter, currentFunctionName); }
                            ;
 dcl_spec                   : dcl_specifiers                                                  { semantic(8); };
 dcl_specifiers             : dcl_specifier                                                   { semantic(9); }
@@ -81,7 +83,7 @@ type_specifier             : TINT                                               
                            | TFLOAT                                                          { returnType = 2;}
                            | TVOID                                                           { returnType = 0;};
 function_name              : TIDENT                                                          { semantic(16); 
-                                                                                                updateIdentType(9, identStr); 
+                                                                                                updateIdentType(function, identStr); 
                                                                                                 updateReturnType(returnType, identStr); 
                                                                                                 //updateFunctionParameter(1, identStr);
                                                                                                 // //updateFunctionParameter(2, identStr);
@@ -104,10 +106,10 @@ formal_param_list          : param_dcl                                          
                            | formal_param_list TCOMMA param_dcl                              { semantic(21); }
                            | formal_param_list param_dcl error                               { yyerrok; ReportParserError("NO_COMMA"); }
                            ;
-param_dcl                  : dcl_specifier ident                                             { if (returnType==1) {updateIdentType(5, identStr); updateFunctionParameter(5, currentFunctionName); } 
-                                                                                                else if (returnType ==2) {updateIdentType(6, identStr);  updateFunctionParameter(6, currentFunctionName);}} 
-                           | dcl_specifier array                                             { if (returnType==1) {updateIdentType(7, identStr); updateFunctionParameter(7, currentFunctionName);} 
-                                                                                                else if (returnType ==2) {updateIdentType(8, identStr); updateFunctionParameter(8, currentFunctionName);}}  
+param_dcl                  : dcl_specifier ident                                             { if (returnType==1) {updateIdentType(int_scalar_parameter, identStr); updateFunctionParameter(int_scalar_parameter, currentFunctionName); } 
+                                                                                                else if (returnType ==2) {updateIdentType(float_scalar_parameter, identStr);  updateFunctionParameter(float_scalar_parameter, currentFunctionName);}} 
+                           | dcl_specifier array                                             { if (returnType==1) {updateIdentType(int_array_parameter, identStr); updateFunctionParameter(int_array_parameter, currentFunctionName);} 
+                                                                                                else if (returnType ==2) {updateIdentType(float_array_parameter, identStr); updateFunctionParameter(float_array_parameter, currentFunctionName);}}  
                            | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE TRBRACE                                                 { semantic(23); }
                            | TLBRACE block_item_list TRBRACE                                 { semantic(23); }
@@ -121,27 +123,27 @@ declaration                : dcl_spec init_dcl_list TSEMI                       
                            | dcl_spec init_dcl_list error                                    { yyerrok; ReportParserError("declaration MISSING SEMI"); };
 init_dcl_list              : init_declarator                                                 { semantic(29); }
                            | init_dcl_list TCOMMA init_declarator                            { semantic(30); };
-init_declarator            : ident                                                           { if (returnType==1) updateIdentType(1, identStr);  // int scalar variable
-                                                                                                else if (returnType ==2) updateIdentType(2, identStr);  } // float scalar variable
-                           | array                                                           { if (returnType==1) updateIdentType(3, identStr); // int 배열 선언
-                                                                                                else if (returnType==2) updateIdentType(4, identStr);  }; //float 배열 선언
-                           | ident TASSIGN TNUMBER                                           { if (returnType==1) updateIdentType(1, identStr);  
-                                                                                                else if (returnType ==2) updateIdentType(2, identStr);  
+init_declarator            : ident                                                           { if (returnType==1) updateIdentType(int_scalar_variable, identStr);  // int scalar variable
+                                                                                                else if (returnType ==2) updateIdentType(float_scalar_variable, identStr);  } // float scalar variable
+                           | array                                                           { if (returnType==1) updateIdentType(int_array_variable, identStr); // int 배열 선언
+                                                                                                else if (returnType==2) updateIdentType(float_array_variable, identStr);  }; //float 배열 선언
+                           | ident TASSIGN TNUMBER                                           { if (returnType==1) updateIdentType(int_scalar_variable, identStr);  
+                                                                                                else if (returnType ==2) updateIdentType(float_scalar_variable, identStr);  
                                                                                                 if (getIdentType(identStr) != 1) ReportParserError("type mismatch in initialization"); 
                                                                                              } 
-                           | ident TASSIGN TFNUMBER                                          { if (returnType==1) updateIdentType(1, identStr);  // int scalar variable
-                                                                                                else if (returnType ==2) updateIdentType(2, identStr);  
+                           | ident TASSIGN TFNUMBER                                          { if (returnType==1) updateIdentType(int_scalar_variable, identStr);  // int scalar variable
+                                                                                                else if (returnType ==2) updateIdentType(float_scalar_variable, identStr);  
                                                                                                   
-                                                                                                if (getIdentType(identStr) != 2) ReportParserError("type mismatch in initialization"); 
+                                                                                                if (getIdentType(identStr) != float_scalar_variable) ReportParserError("type mismatch in initialization"); 
                                                                                              } 
                            | ident TASSIGN error                                             { yyerrok; ReportParserError("init_declarator"); }
-                           | array TASSIGN TNUMBER                                           { if (returnType==1) updateIdentType(3, identStr);
-                                                                                                else if (returnType==2) updateIdentType(4, identStr);  
+                           | array TASSIGN TNUMBER                                           { if (returnType==1) updateIdentType(int_array_variable, identStr);
+                                                                                                else if (returnType==2) updateIdentType(float_array_variable, identStr);  
                                                                                                 if (getIdentType(identStr) != 1) ReportParserError("type mismatch in initialization"); 
                                                                                              } 
-                           | array TASSIGN TFNUMBER                                          { if (returnType==1) updateIdentType(3, identStr); 
-                                                                                                else if (returnType==2) updateIdentType(4, identStr);   
-                                                                                                if (getIdentType(identStr) != 2) ReportParserError("type mismatch in initialization"); 
+                           | array TASSIGN TFNUMBER                                          { if (returnType==1) updateIdentType(int_array_variable, identStr); 
+                                                                                                else if (returnType==2) updateIdentType(float_array_variable, identStr);   
+                                                                                                if (getIdentType(identStr) != float_scalar_variable) ReportParserError("type mismatch in initialization"); 
                                                                                              } 
                            | array TASSIGN error                                             { yyerrok; ReportParserError("init_declarator"); }
                            | function_prototype                                              
@@ -287,11 +289,11 @@ int getIdentType(const char *identifier)
 {
    HTpointer hash_ident = getIdentHash(identifier);
    struct Ident sym_ident = sym_table[hash_ident->index];  
-   int identType = sym_ident.ident_type;
+   dataType identType = sym_ident.ident_type;
    
-   if (identType == 1 || identType == 3)
+   if (identType == int_scalar_variable || identType == int_array_variable)
       return 1;
-   else if (identType == 3 || identType == 4)
+   else if (identType == float_scalar_variable || identType == float_array_variable)
       return 2;
    else
       return 0;
@@ -305,13 +307,13 @@ int checkIdentExists(const char *identifier)
    }
 
    struct Ident sym_ident = sym_table[hash_ident->index];   
-   if (sym_ident.ident_type == NULL || sym_ident.ident_type == -1) {
+   if (sym_ident.ident_type == NULL || sym_ident.ident_type == none) {
       return 0;
    }
    return 1;
 }
 
-void updateIdentType(int type, const char *identifier)
+void updateIdentType(dataType type, const char *identifier)
 {
     printf("-------------------------updateIdentType-------------------------\n");
     HTpointer hash_ident = getIdentHash(identifier); 
@@ -325,10 +327,10 @@ void updateIdentType(int type, const char *identifier)
     struct Ident sym_ident = sym_table[hash_ident->index];     
 
     // identifier의 type 정보가 NULL이거나 -1이라면 identifier의 type 정보를 업데이트
-    if (sym_ident.ident_type == NULL || sym_ident.ident_type == -1) {
+    if (sym_ident.ident_type == NULL || sym_ident.ident_type == none) {
         sym_ident.ident_type = type;
         sym_table[hash_ident->index] = sym_ident;
-        printf("sym_ident.ident_type: %d\n", sym_ident.ident_type);
+        printf("sym_ident.ident_type: %s\n", dataTypesChar[sym_ident.ident_type]);
     } 
     else {
         if (sym_ident.linenumber != lineNumber) {
@@ -338,7 +340,7 @@ void updateIdentType(int type, const char *identifier)
     printf("updateIdentType complete\n");
 }
 
-void updateReturnType(int returntype, const char *identifier)
+void updateReturnType(dataType returntype, const char *identifier)
 {
    printf("-------------------------updateReturnType-------------------------\n");
    HTpointer hash_ident = getIdentHash(identifier);    
@@ -349,23 +351,23 @@ void updateReturnType(int returntype, const char *identifier)
 
    // identifier의 type 정보가 function일 경우에만 return값 정보 업데이트
    struct Ident sym_ident = sym_table[hash_ident->index];   
-   if (sym_ident.ident_type == 9) {	// type이 function name인 경우
+   if (sym_ident.ident_type == function) {	// type이 function name인 경우
       sym_ident.return_type = returntype;	// 매개변수로 받은 returntype 설정
-      printf("sym_ident.return_type: %d\n", sym_ident.return_type);
+      printf("sym_ident.ident_type: %s\n", dataTypesChar[sym_ident.ident_type]);
       sym_table[hash_ident->index] = sym_ident;
    } 
    else {
-      snprintf(sym_ident.return_type, sizeof(sym_ident.return_type), "-1");	// function name이 아닌 경우는 -1로 설정
+      sym_ident.return_type = none;	// function name이 아닌 경우는 -1로 설정
       sym_table[hash_ident->index] = sym_ident;
    }
    printf("updateReturnType complete\n");
-   invoked_func_args = (int*)malloc(0);
+   invoked_func_args = (dataType*)malloc(0);
 }
 
-void updateFunctionParameter(int paramtype, const char *function_name)
+void updateFunctionParameter(dataType paramtype, const char *function_name)
 {
    printf("-------------------------updateFunctionParameter-------------------------\n");
-   printf("paramtype: %d, function_name: %s\n", paramtype, function_name);
+   printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramtype], function_name);
    HTpointer hash_ident = getIdentHash(function_name);    
     
    if (hash_ident != NULL) {
@@ -373,9 +375,9 @@ void updateFunctionParameter(int paramtype, const char *function_name)
    }
    // function_name type 정보가 function일 경우에만 return값 정보 업데이트
    struct Ident sym_ident = sym_table[hash_ident->index];   
-   if (sym_ident.ident_type == 9) {	// type이 function name인 경우
+   if (sym_ident.ident_type == function) {	// type이 function name인 경우
       sym_ident.param_count++;
-      sym_ident.param = (int*)realloc(sym_ident.param, (sym_ident.param_count)*sizeof(int));
+      sym_ident.param = (dataType*)realloc(sym_ident.param, (sym_ident.param_count)*sizeof(dataType));
       sym_ident.param[sym_ident.param_count-1] = paramtype;
       
       sym_table[hash_ident->index] = sym_ident;
@@ -387,13 +389,13 @@ void updateFunctionParameter(int paramtype, const char *function_name)
 }
 
 
-void updateInvokedFuncArgs(int argument_type){
+void updateInvokedFuncArgs(dataType argument_type){
    printf("-------------------------updateInvokedFuncArgs-------------------------\n");
    if(invoked_func_args == NULL){
       printf("invoked_func_args is NULL \n");
       return;
    }
-   invoked_func_args = (int*)realloc(invoked_func_args, (++invoked_func_args_cnt)*sizeof(int));
+   invoked_func_args = (dataType*)realloc(invoked_func_args, (++invoked_func_args_cnt)*sizeof(dataType));
    invoked_func_args[invoked_func_args_cnt-1] = argument_type;
    
    printf("updateInvokedFuncArgs complete\n");
@@ -406,7 +408,7 @@ void isIllegalInvoke(const char *function_name){
    struct Ident sym_ident = sym_table[hash_ident->index];
 
    // function_name의 type 정보가 function이 아니거나 파라미터 개수가 맞지 않으면 에러 발생
-   if (sym_ident.ident_type != 9 || sym_ident.param_count != invoked_func_args_cnt) {
+   if (sym_ident.ident_type != function || sym_ident.param_count != invoked_func_args_cnt) {
       ReportParserError("Invalid function call.");
       free(invoked_func_args);
       return;
