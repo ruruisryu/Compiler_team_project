@@ -11,7 +11,7 @@ char str_pool[MAX_STR_POOL];
 
 // const char* array for print dataType
 const char* dataTypesChar[] = {
-    "void_return",
+    "void_return\t",
     "int_scalar_variable",
     "float_scalar_variable",
     "int_array_variable",
@@ -21,9 +21,9 @@ const char* dataTypesChar[] = {
     "int_array_parameter",
     "float_array_parameter",
     "function\t",
-    "none\t",
-    "scalar",
-    "array",
+    "none\t\t",
+    "scalar\t\t",
+    "array\t\t",
 };
 // sym_table struct
 // Index | Line | Symbol | Type | ReturnType | Parameter 
@@ -45,6 +45,7 @@ void init_sym_table() {
     }
 }
 
+// print symbol table
 void print_sym_table() {
     int i;
     printf("\nSymbol Table\n");
