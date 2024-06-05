@@ -242,20 +242,18 @@ primary_exp                : TIDENT                                             
 // identifier의 해시테이블 포인터 값을 반환하는 함수
 HTpointer getIdentHash(const char *identifier)
 {
-   // 해당 identifier의 해시코드 구하기
+   // identifier에 해당하는 HTpointer 가져오기
    int hashValue = divisionMethod(identifier, HASH_TABLE_SIZE);
-   // 인식된 identifier의 해시값으로 해시테이블과 심볼테이블에 접근해 identifier가 저장되어있는지 확인
    HTpointer hash_ident = lookup_hash_table(identifier, hashValue);
-   bool isExist = false; 	// Hash Table을 읽기 전, false로 초기화
+   bool isExist = false; 	
 
    // hash_ident 값이 NULL이라면, 해당 identifier가 해시테이블에 저장된 적이 없다는 뜻
-
    // lookup_sym_table 함수를 통해 심볼테이블의 hash_ident.index 번째 인덱스에 identifier가 저장되어있는지 확인 후 bool 값 return
    // isExist가 false라면 연결된 다음 identifier를 hash_ident에 저장 후 다시 반복
-   while (hash_ident != NULL && !isExist) {	// 현재 가리키는 위치에 문자가 있고 아직 identifier가 발견되지 않은 경우
-      isExist = lookup_sym_table(identifier, hash_ident->index);  // 새로운 함수를 사용하여 비교
+   while (hash_ident != NULL && !isExist) {
+      isExist = lookup_sym_table(identifier, hash_ident->index);  
       if (!isExist) {
-         hash_ident = hash_ident->next;  // linked list의 다음 identifier로 이동
+         hash_ident = hash_ident->next; 
       }
    }
    return hash_ident;
@@ -264,16 +262,20 @@ HTpointer getIdentHash(const char *identifier)
 // identifier의 타입을 반환하는 함수
 dataType getIdentType(const char *identifier)
 {
+   // sym_table에서 identifier 정보 가져오기
    HTpointer hash_ident = getIdentHash(identifier);
    struct Ident sym_ident = sym_table[hash_ident->index];  
+
    return sym_ident.ident_type;
 }
 
 // parameter의 타입을 반환하는 함수
 dataType getParamType(const char *identifier)
 {
+   // sym_table에서 identifier 정보 가져오기
    HTpointer hash_ident = getIdentHash(identifier);
    struct Ident sym_ident = sym_table[hash_ident->index];
+
    if(sym_ident.ident_type == int_scalar_variable){
       return int_scalar_parameter;
    }
@@ -286,12 +288,10 @@ dataType getParamType(const char *identifier)
 // identifier가 심볼 테이블에 저장되어 있는지 확인하는 함수
 int checkIdentExists(const char *identifier)
 {
+   // sym_table에서 identifier 정보 가져오기
    HTpointer hash_ident = getIdentHash(identifier);
-   if (hash_ident == NULL) {
-      return 0;
-   }
-
-   struct Ident sym_ident = sym_table[hash_ident->index];   
+   struct Ident sym_ident = sym_table[hash_ident->index];  
+   // ident_type이 NULL이거나 none이라면 선언된 identifier가 아니므로 0 반환 
    if (sym_ident.ident_type == NULL || sym_ident.ident_type == none) {
       return 0;
    }
@@ -348,12 +348,13 @@ void updateIdentType(int numType, dataType variableType, int is_param, const cha
 // 함수의 리턴 타입을 업데이트하는 함수
 void updateReturnType(int returnType, const char *identifier)
 {
+   // sym_table에서 identifier 정보 가져오기
    HTpointer hash_ident = getIdentHash(identifier);    
-
+   struct Ident sym_ident = sym_table[hash_ident->index];
+      
    // identifier의 type 정보가 function일 경우에만 return값 정보 업데이트
-   struct Ident sym_ident = sym_table[hash_ident->index];   
-   if (sym_ident.ident_type == function) {	// type이 function name인 경우
-      sym_ident.return_type = returnType;	// 매개변수로 받은 returntype 설정
+   if (sym_ident.ident_type == function) {	
+      sym_ident.return_type = returnType;	
       sym_table[hash_ident->index] = sym_ident;
    } 
    else {
@@ -381,8 +382,9 @@ void updateFunctionParameter(int type, dataType variableType, const char *functi
    }
 }
 
-// 함수 호출 시 전달된 parameter list의 타입을 저장하는 함수
+// 함수 호출 시 parameter의 타입을 저장하는 함수
 void updateInvokedFuncArgs(dataType argument_type){
+   // invoked_func_args가 NULL이라면 malloc로 메모리 할당
    if(invoked_func_args == NULL){
       invoked_func_args = (dataType*)malloc(sizeof(dataType));
       if (invoked_func_args == NULL) {
@@ -400,6 +402,8 @@ void updateInvokedFuncArgs(dataType argument_type){
       }
       invoked_func_args = temp;
    }
+
+   // invoked_func_args 마지막 인덱스에 armument_type 업데이트해주기 
    invoked_func_args[invoked_func_args_cnt-1] = argument_type;
 }
 
