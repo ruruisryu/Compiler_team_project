@@ -85,19 +85,11 @@ type_specifier             : TINT                                               
 function_name              : TIDENT                                                          { semantic(16); 
                                                                                                 updateIdentType(function, identStr); 
                                                                                                 updateReturnType(returnType, identStr); 
-                                                                                                //updateFunctionParameter(1, identStr);
-                                                                                                // //updateFunctionParameter(2, identStr);
-                                                                                                // updateInvokedFuncArgs(1);
-                                                                                                // updateInvokedFuncArgs(2);
-                                                                                                // if(isIllegalInvoke(identStr)){
-                                                                                                //    printf("true\n");}
-                                                                                                // else{
-                                                                                                //    printf("false\n");}
-                                                                                                   strncpy(currentFunctionName, identStr,1000);
-                                                                                             }; // 테스트용 functionparameter 호출
-
+                                                                                                strncpy(currentFunctionName, identStr,1000);
+                                                                                             }
                            | TERROR
-                           |                                                                 { yyerrok; ReportParserError("NO_FUNC_NAME")};
+                           |                                                                 { yyerrok; ReportParserError("NO_FUNC_NAME")}
+                           ;
 formal_param               : TLPAREN opt_formal_param TRPAREN                                { semantic(17); }
                            | TLPAREN opt_formal_param error                                  { yyerrok; ReportParserError("formal_param"); };
 opt_formal_param           : formal_param_list                                               { semantic(18); }
@@ -111,14 +103,17 @@ param_dcl                  : dcl_specifier ident                                
                            | dcl_specifier array                                             { if (returnType==1) {updateIdentType(int_array_parameter, identStr); updateFunctionParameter(int_array_parameter, currentFunctionName);} 
                                                                                                 else if (returnType ==2) {updateIdentType(float_array_parameter, identStr); updateFunctionParameter(float_array_parameter, currentFunctionName);}}  
                            | dcl_specifier function_prototype                                ;
-compound_st                : TLBRACE TRBRACE                                                 { semantic(23); }
-                           | TLBRACE block_item_list TRBRACE                                 { semantic(23); }
-                           | TLBRACE error                                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); }
-                           | TLBRACE block_item_list error                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); };
+compound_st                : TLBRACE opt_block_items TRBRACE                                 { semantic(23); }
+                           | TLBRACE opt_block_items error                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); }
+                           ;
+opt_block_items            : block_item_list
+                           |
+                           ;
 block_item_list            : block_item                                                      { semantic(26); }
                            | block_item_list block_item                                      { semantic(27); };
 block_item                 : declaration                                                     { semantic(28); }
-                           | statement                                                       { semantic(29); };
+                           | statement                                                       { semantic(29); }
+                           ;
 declaration                : dcl_spec init_dcl_list TSEMI                                    { semantic(28); }
                            | dcl_spec init_dcl_list error                                    { yyerrok; ReportParserError("declaration MISSING SEMI"); };
 init_dcl_list              : init_declarator                                                 { semantic(29); }
@@ -166,10 +161,7 @@ statement                  : compound_st                                        
 expression_st              : expression TSEMI                                                { semantic(46); }
                            | TSEMI                                                           { semantic(46); }
                            | expression error                                                { yyerrok; ReportParserError("expression_st MISSING SEMI"); }
-                           | TNUMBER assignment_op                                           { yyerrok; ReportParserError("cannot assign to integer"); }
-                           | TFNUMBER assignment_op                                          { yyerrok; ReportParserError("cannot assign to float"); }                                                     
-                           | TNUMBER TINC                                                    { yyerrok; ReportParserError("cannot increment integer"); }
-                           | TFNUMBER TDEC                                                   { yyerrok; ReportParserError("cannot decrement float"); }                                                     
+                           | expression error assignment_op                                  { yyerrok; ReportParserError("cannot assign to invalid lvalue");}
                            ;
 if_st                      : TIF TLPAREN expression TRPAREN statement %prec LOWER_THAN_ELSE  { semantic(49); }
                            | TIF TLPAREN expression TRPAREN statement TELSE statement        { semantic(50); }
@@ -179,10 +171,11 @@ while_st                   : TWHILE TLPAREN expression TRPAREN statement        
                            | TWHILE TLPAREN expression error statement                       { yyerrok; ReportParserError("while_st MISSING RPAREN"); }
                            | TWHILE error expression TRPAREN statement                       { yyerrok; ReportParserError("while_st MISSING LPAREN"); };
 return_st                  : TRETURN expression_st                                           { semantic(52); };
-expression                 : assignment_exp                                                  { semantic(53); };
-assignment_exp             : logical_or_exp                                                  { semantic(54); }
-                           | unary_exp assignment_op assignment_exp                          { semantic(55); }
-                           | unary_exp assignment_op error                                   { yyerrok; ReportParserError("NO_RIGHT_ASSIGNMENT_EXP"); }
+expression                 : assignment_exp                                                  { semantic(53); }
+                           ;
+assignment_exp             : logical_or_exp 
+                           | postfix_exp assignment_op assignment_exp                        { semantic(55); }
+                           | postfix_exp assignment_op error                                 { yyerrok; ReportParserError("NO_RIGHT_ASSIGNMENT_EXP"); }
                            ;
 assignment_op              : TASSIGN                                                  
                            | TADDASSIGN
@@ -219,20 +212,17 @@ additive_exp               : multiplicative_exp                                 
                            | additive_exp TADD error                                         { yyerrok; ReportParserError("NO_RIGHT_TADD_EXP");}
                            | additive_exp TSUB error                                         { yyerrok; ReportParserError("NO_RIGHT_TSUB_EXP");}
                            ;
-multiplicative_exp         : unary_exp                                                       { semantic(76); }
-                           | TNUMBER
-                           | TFNUMBER
-                           | multiplicative_exp TMUL unary_exp                               { semantic(77); }
-                           | multiplicative_exp TDIV unary_exp                               { semantic(78); }
-                           | multiplicative_exp TMOD unary_exp                               { semantic(79); }
-                           | multiplicative_exp TMUL TNUMBER                                 { semantic(77); }
-                           | multiplicative_exp TDIV TNUMBER                                 { semantic(78); }
-                           | multiplicative_exp TMOD TNUMBER                                 { semantic(79); }
-                           | multiplicative_exp TDIV TFNUMBER                                { semantic(78); }
-                           | multiplicative_exp TMOD TFNUMBER                                { semantic(79); }
+multiplicative_exp         : unary_number                                                    { semantic(76); }
+                           | multiplicative_exp TMUL unary_number                            { semantic(77); }
+                           | multiplicative_exp TDIV unary_number                            { semantic(78); }
+                           | multiplicative_exp TMOD unary_number                            { semantic(79); }
                            | multiplicative_exp TMUL error                                   { yyerrok; ReportParserError("NO_RIGHT_TMUL_EXP"); }
                            | multiplicative_exp TDIV error                                   { yyerrok; ReportParserError("NO_RIGHT_TDIV_EXP"); }
                            | multiplicative_exp TMOD error                                   { yyerrok; ReportParserError("NO_RIGHT_TMOD_EXP"); }
+                           ;
+unary_number               : unary_exp
+                           | TNUMBER                                                         { if (getIdentType(identStr) != 1) ReportParserError("type mismatch in assignment"); }
+                           | TFNUMBER                                                        { if (getIdentType(identStr) != 2) ReportParserError("type mismatch in assignment"); }                                  
                            ;
 unary_exp                  : postfix_exp                                                     { semantic(80); } // 할당문 좌변
                            | TSUB unary_exp                                                  { semantic(81); }
