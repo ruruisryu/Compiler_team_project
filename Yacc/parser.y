@@ -15,7 +15,7 @@ extern const char* dataTypesChar[];
 extern void semantic(int);
 extern void ReportParserError(char* message);
 HTpointer getIdentHash(const char *identifier);
-int getIdentType(const char *identifier);
+dataType getIdentType(const char *identifier);
 int checkIdentExists(const char *identifier);
 void updateReturnType(dataType returntype, const char *identifier); 
 void updateIdentType(dataType type, const char *identifier);
@@ -125,7 +125,7 @@ init_declarator            : ident                                              
                                                                                                 else if (returnType==2) updateIdentType(float_array_variable, identStr);  }; //float 배열 선언
                            | ident TASSIGN TNUMBER                                           { if (returnType==1) updateIdentType(int_scalar_variable, identStr);  
                                                                                                 else if (returnType ==2) updateIdentType(float_scalar_variable, identStr);  
-                                                                                                if (getIdentType(identStr) != 1) ReportParserError("type mismatch in initialization"); 
+                                                                                                if (getIdentType(identStr) != int_scalar_variable) ReportParserError("type mismatch in initialization"); 
                                                                                              } 
                            | ident TASSIGN TFNUMBER                                          { if (returnType==1) updateIdentType(int_scalar_variable, identStr);  // int scalar variable
                                                                                                 else if (returnType ==2) updateIdentType(float_scalar_variable, identStr);  
@@ -135,11 +135,11 @@ init_declarator            : ident                                              
                            | ident TASSIGN error                                             { yyerrok; ReportParserError("init_declarator"); }
                            | array TASSIGN TNUMBER                                           { if (returnType==1) updateIdentType(int_array_variable, identStr);
                                                                                                 else if (returnType==2) updateIdentType(float_array_variable, identStr);  
-                                                                                                if (getIdentType(identStr) != 1) ReportParserError("type mismatch in initialization"); 
+                                                                                                if (getIdentType(identStr) != int_array_variable) ReportParserError("type mismatch in initialization"); 
                                                                                              } 
                            | array TASSIGN TFNUMBER                                          { if (returnType==1) updateIdentType(int_array_variable, identStr); 
                                                                                                 else if (returnType==2) updateIdentType(float_array_variable, identStr);   
-                                                                                                if (getIdentType(identStr) != float_scalar_variable) ReportParserError("type mismatch in initialization"); 
+                                                                                                if (getIdentType(identStr) != float_array_variable) ReportParserError("type mismatch in initialization"); 
                                                                                              } 
                            | array TASSIGN error                                             { yyerrok; ReportParserError("init_declarator"); }
                            | function_prototype                                              
@@ -222,8 +222,8 @@ multiplicative_exp         : unary_number                                       
                            | multiplicative_exp TMOD error                                   { yyerrok; ReportParserError("NO_RIGHT_TMOD_EXP"); }
                            ;
 unary_number               : unary_exp
-                           | TNUMBER                                                         { if (getIdentType(identStr) != 1) ReportParserError("type mismatch in assignment"); }
-                           | TFNUMBER                                                        { if (getIdentType(identStr) != 2) ReportParserError("type mismatch in assignment"); }                                  
+                           | TNUMBER                                                         { if (getIdentType(identStr) != int_scalar_variable) ReportParserError("type mismatch in assignment"); }
+                           | TFNUMBER                                                        { if (getIdentType(identStr) != float_scalar_variable) ReportParserError("type mismatch in assignment"); }                                  
                            ;
 unary_exp                  : postfix_exp                                                     { semantic(80); } // 할당문 좌변
                            | TSUB unary_exp                                                  { semantic(81); }
@@ -242,12 +242,13 @@ postfix_exp                : primary_exp                                        
 opt_actual_param           : actual_param                                                    { semantic(90); }
                            |                                                                 { semantic(91); };
 actual_param               : actual_param_list                                               { semantic(92); };
-param_type                 : ident                                                           
-                           | TNUMBER                                                         
-                           | TFNUMBER                                                        
+param_type                 : ident                                                           { if (!checkIdentExists(identStr)) ReportParserError("invalid identifier");
+                                                                                                updateInvokedFuncArgs(getIdentType(identStr));}
+                           | TNUMBER                                                         { updateInvokedFuncArgs(int_scalar_variable);}
+                           | TFNUMBER                                                        { updateInvokedFuncArgs(float_scalar_variable);}
                            ;
-actual_param_list          : param_type                                                      { updateInvokedFuncArgs(currentArgumentType);} 
-                           | actual_param_list TCOMMA param_type                             { updateInvokedFuncArgs(currentArgumentType);} 
+actual_param_list          : param_type                                                       
+                           | actual_param_list TCOMMA param_type                              
                            ;
 primary_exp                : TIDENT                                                          { 
                                                                                                 strcpy_s(currentFunctionName, sizeof(currentFunctionName), identStr);
@@ -289,14 +290,7 @@ int getIdentType(const char *identifier)
 {
    HTpointer hash_ident = getIdentHash(identifier);
    struct Ident sym_ident = sym_table[hash_ident->index];  
-   dataType identType = sym_ident.ident_type;
-   
-   if (identType == int_scalar_variable || identType == int_array_variable)
-      return 1;
-   else if (identType == float_scalar_variable || identType == float_array_variable)
-      return 2;
-   else
-      return 0;
+   return sym_ident.ident_type;
 }
 
 int checkIdentExists(const char *identifier)
@@ -389,7 +383,8 @@ void updateFunctionParameter(dataType paramtype, const char *function_name)
 
 void updateInvokedFuncArgs(dataType argument_type){
    printf("-------------------------updateInvokedFuncArgs-------------------------\n");
-   
+   printf("invoked func args: %s\n", dataTypesChar[argument_type]);
+
    if(invoked_func_args == NULL){
       printf("invoked_func_args is NULL \n");
       invoked_func_args = (dataType*)malloc(sizeof(dataType));
