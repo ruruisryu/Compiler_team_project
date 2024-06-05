@@ -12,8 +12,7 @@
 
 extern int lineNumber; 
 extern const char* dataTypesChar[];
-extern void semantic(int);
-extern void ReportParserError(char* message);
+extern void reportParserError(char* message);
 HTpointer getIdentHash(const char *identifier);
 dataType getIdentType(const char *identifier);
 int checkIdentExists(const char *identifier);
@@ -54,111 +53,111 @@ int invoked_func_args_cnt = 0;
 %nonassoc TELSE
 
 %%
-mini_c                     : translation_unit                                                { semantic(1); };
-translation_unit           : external_dcl                                                    { semantic(2); }
-                           | translation_unit external_dcl                                   { semantic(3); };
-external_dcl               : function_def                                                    { semantic(4); }
-                           | declaration                                                     { semantic(5); };
-function_def               : function_header compound_st                                     { semantic(6); }
-                           | error compound_st                                               { yyerrok; ReportParserError("function_def"); };
-function_header            : dcl_spec function_name formal_param                             { semantic(7); };
+mini_c                     : translation_unit                                                ;
+translation_unit           : external_dcl                                                    
+                           | translation_unit external_dcl                                   ;
+external_dcl               : function_def                                                    
+                           | declaration                                                     ;
+function_def               : function_header compound_st                                     
+                           | error compound_st                                               { yyerrok; reportParserError("function_def"); };
+function_header            : dcl_spec function_name formal_param                             ;
 // function_definition: int main(int x, int y) {} / function_prototype: int main(int x, int);
 // formal_param: (int x, float y)                 / type_only_param: (int, float)
-function_prototype         : function_name type_only_param                                   { semantic(7); }
-                           | function_name formal_param                                      { semantic(7); };
+function_prototype         : function_name type_only_param                                   
+                           | function_name formal_param                                      ;
 type_only_param            : TLPAREN type_only_param_list TRPAREN                            
-                           | TLPAREN type_only_param_list error                              { yyerrok; ReportParserError("type_only_param"); };
-type_only_param_list       : type_only_param_dcl                                             { semantic(20); }
-                           | type_only_param_list TCOMMA type_only_param_dcl                 { semantic(21); }
-                           | type_only_param_list TCOMMA param_dcl                           { semantic(21); }
-                           | formal_param_list TCOMMA type_only_param_dcl                    { semantic(21); };
+                           | TLPAREN type_only_param_list error                              { yyerrok; reportParserError("type_only_param"); };
+type_only_param_list       : type_only_param_dcl                                             
+                           | type_only_param_list TCOMMA type_only_param_dcl                 
+                           | type_only_param_list TCOMMA param_dcl                           
+                           | formal_param_list TCOMMA type_only_param_dcl                    ;
 type_only_param_dcl        : dcl_specifier                                                   { updateFunctionParameter(numType, scalar, currentFunctionName); };
-dcl_spec                   : dcl_specifiers                                                  { semantic(8); };
-dcl_specifiers             : dcl_specifier                                                   { semantic(9); }
-                           | dcl_specifiers dcl_specifier                                    { semantic(10); };
-dcl_specifier              : type_qualifier                                                  { semantic(11); }
-                           | type_specifier                                                  { semantic(12); };
-type_qualifier             : TCONST                                                          { semantic(13); };
-type_specifier             : TINT                                                            { semantic(14); numType = 1; }
-                           | TFLOAT                                                          { numType = 2;}
-                           | TVOID                                                           { numType = 0;};
-function_name              : TIDENT                                                          { updateIdentType(numType, function, identStr); updateReturnType(numType, identStr); 
-                                                                                                strncpy(currentFunctionName, identStr, 1000);
-                                                                                             }
+dcl_spec                   : dcl_specifiers                                                  ;
+dcl_specifiers             : dcl_specifier                                                   
+                           | dcl_specifiers dcl_specifier                                    ;
+dcl_specifier              : type_qualifier                                                  
+                           | type_specifier                                                  ;
+type_qualifier             : TCONST                                                          ;
+type_specifier             : TINT                                                            { numType = 1; }
+                           | TFLOAT                                                          { numType = 2; }
+                           | TVOID                                                           { numType = 0; }
+                           ;
+function_name              : TIDENT                                                          { updateIdentType(numType, function, 0, identStr); updateReturnType(numType, identStr); 
+                                                                                                strncpy(currentFunctionName, identStr, 1000); }                                                                                             
                            | TERROR
-                           |                                                                 { yyerrok; ReportParserError("NO_FUNC_NAME")}
+                           |                                                                 { yyerrok; reportParserError("NO_FUNC_NAME")}
                            ;
-formal_param               : TLPAREN opt_formal_param TRPAREN                                { semantic(17); }
-                           | TLPAREN opt_formal_param error                                  { yyerrok; ReportParserError("formal_param"); };
-opt_formal_param           : formal_param_list                                               { semantic(18); }
-                           |                                                                 { semantic(19); };
-formal_param_list          : param_dcl                                                       { semantic(20); }
-                           | formal_param_list TCOMMA param_dcl                              { semantic(21); }
-                           | formal_param_list param_dcl error                               { yyerrok; ReportParserError("NO_COMMA"); }
+formal_param               : TLPAREN opt_formal_param TRPAREN                                
+                           | TLPAREN opt_formal_param error                                  { yyerrok; reportParserError("formal_param"); };
+opt_formal_param           : formal_param_list                                               
+                           |                                                                 ;
+formal_param_list          : param_dcl                                                       
+                           | formal_param_list TCOMMA param_dcl                              
+                           | formal_param_list param_dcl error                               { yyerrok; reportParserError("NO_COMMA"); }
                            ;
-param_dcl                  : dcl_specifier ident                                             { updateIdentType(numType, scalar, identStr); updateFunctionParameter(numType, scalar, currentFunctionName); }  
-                           | dcl_specifier array                                             { updateIdentType(numType, array, identStr); updateFunctionParameter(numType, array, currentFunctionName); }  
+param_dcl                  : dcl_specifier ident                                             { updateIdentType(numType, scalar, 1, identStr); updateFunctionParameter(numType, scalar, currentFunctionName); }  
+                           | dcl_specifier array                                             { updateIdentType(numType, array, 1, identStr); updateFunctionParameter(numType, array, currentFunctionName); }  
                            | dcl_specifier function_prototype                                ;
-compound_st                : TLBRACE opt_block_items TRBRACE                                 { semantic(23); }
-                           | TLBRACE opt_block_items error                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); }
+compound_st                : TLBRACE opt_block_items TRBRACE                                 
+                           | TLBRACE opt_block_items error                                   { yyerrok; reportParserError("compound_st MISSING RBRACE"); }
                            ;
 opt_block_items            : block_item_list
                            |
                            ;
-block_item_list            : block_item                                                      { semantic(26); }
-                           | block_item_list block_item                                      { semantic(27); };
-block_item                 : declaration                                                     { semantic(28); }
-                           | statement                                                       { semantic(29); }
+block_item_list            : block_item                                                      
+                           | block_item_list block_item                                      ;
+block_item                 : declaration                                                     
+                           | statement                                                       
                            ;
-declaration                : dcl_spec init_dcl_list TSEMI                                    { semantic(28); }
-                           | dcl_spec init_dcl_list error                                    { yyerrok; ReportParserError("declaration MISSING SEMI"); };
-init_dcl_list              : init_declarator                                                 { semantic(29); }
-                           | init_dcl_list TCOMMA init_declarator                            { semantic(30); };
-init_declarator            : ident                                                           { updateIdentType(numType, scalar, identStr); } 
+declaration                : dcl_spec init_dcl_list TSEMI                                    
+                           | dcl_spec init_dcl_list error                                    { yyerrok; reportParserError("declaration MISSING SEMI"); };
+init_dcl_list              : init_declarator                                                 
+                           | init_dcl_list TCOMMA init_declarator                            ;
+init_declarator            : ident                                                           { updateIdentType(numType, scalar, 0, identStr); } 
                            | array                                                           { updateIdentType(numType, array, identStr); }
-                           | ident TASSIGN TNUMBER                                           { updateIdentType(numType, scalar, identStr);
-                                                                                                if (getIdentType(identStr) != 1) ReportParserError("type mismatch in initialization"); }
-                           | ident TASSIGN TFNUMBER                                          { updateIdentType(numType, scalar, identStr); 
-                                                                                                if (getIdentType(identStr) != 2) ReportParserError("type mismatch in initialization"); }                                                                                              
-                           | array TASSIGN TNUMBER                                           { updateIdentType(numType, array, identStr);}   
-                           | array TASSIGN TFNUMBER                                          { updateIdentType(numType, array, identStr); 
-                                                                                                if (getIdentType(identStr) != 2) ReportParserError("type mismatch in initialization"); } 
-                           | ident TASSIGN error                                             { yyerrok; ReportParserError("init_declarator"); }
-                           | array TASSIGN error                                             { yyerrok; ReportParserError("init_declarator"); }
+                           | ident TASSIGN TNUMBER                                           { updateIdentType(numType, scalar, 0, identStr);
+                                                                                                if (getIdentType(identStr) != 1) reportParserError("type mismatch in initialization"); }
+                           | ident TASSIGN TFNUMBER                                          { updateIdentType(numType, scalar, 0, identStr); 
+                                                                                                if (getIdentType(identStr) != 2) reportParserError("type mismatch in initialization"); }                                                                                              
+                           | array TASSIGN TNUMBER                                           { updateIdentType(numType, array, 0, identStr);}   
+                           | array TASSIGN TFNUMBER                                          { updateIdentType(numType, array, 0, identStr); 
+                                                                                                if (getIdentType(identStr) != 2) reportParserError("type mismatch in initialization"); } 
+                           | ident TASSIGN error                                             { yyerrok; reportParserError("init_declarator"); }
+                           | array TASSIGN error                                             { yyerrok; reportParserError("init_declarator"); }
                            | function_prototype                                              
                            ;
 ident                      : TIDENT                                                           
                            | TERROR
                            ;
 array                      : ident TLBRACKET opt_number TRBRACKET   
-                           | ident TLBRACKET opt_number error                               { yyerrok; ReportParserError("declarator MISSING RBRAKET"); }  
+                           | ident TLBRACKET opt_number error                               { yyerrok; reportParserError("declarator MISSING BRAKET"); }  
                            ;
-opt_number                 : TNUMBER                                                         { semantic(35); }
-                           |                                                                 { semantic(36); };
-statement                  : compound_st                                                     { semantic(41); }
-                           | expression_st                                                   { semantic(42); }
-                           | if_st                                                           { semantic(43); }
-                           | while_st                                                        { semantic(44); }
-                           | return_st                                                       { semantic(45); }
+opt_number                 : TNUMBER                                                         
+                           |                                                                 ;
+statement                  : compound_st                                                     
+                           | expression_st                                                   
+                           | if_st                                                           
+                           | while_st                                                        
+                           | return_st                                                       
                            ;                                  
-expression_st              : expression TSEMI                                                { semantic(46); }
-                           | TSEMI                                                           { semantic(46); }
-                           | expression error                                                { yyerrok; ReportParserError("expression_st MISSING SEMI"); }
-                           | expression error assignment_op                                  { yyerrok; ReportParserError("cannot assign to invalid lvalue");}
+expression_st              : expression TSEMI                                                
+                           | TSEMI                                                           
+                           | expression error                                                { yyerrok; reportParserError("expression_st MISSING SEMI"); }
+                           | expression error assignment_op                                  { yyerrok; reportParserError("cannot assign to invalid lvalue");}
                            ;
-if_st                      : TIF TLPAREN expression TRPAREN statement %prec LOWER_THAN_ELSE  { semantic(49); }
-                           | TIF TLPAREN expression TRPAREN statement TELSE statement        { semantic(50); }
-                           | TIF TLPAREN expression error statement                          { yyerrok; ReportParserError("if_st MISSING RPAREN"); }
-                           | TIF error expression TRPAREN statement                          { yyerrok; ReportParserError("if_st MISSING LPAREN"); };
-while_st                   : TWHILE TLPAREN expression TRPAREN statement                     { semantic(51); }
-                           | TWHILE TLPAREN expression error statement                       { yyerrok; ReportParserError("while_st MISSING RPAREN"); }
-                           | TWHILE error expression TRPAREN statement                       { yyerrok; ReportParserError("while_st MISSING LPAREN"); };
-return_st                  : TRETURN expression_st                                           { semantic(52); };
-expression                 : assignment_exp                                                  { semantic(53); }
+if_st                      : TIF TLPAREN expression TRPAREN statement %prec LOWER_THAN_ELSE  
+                           | TIF TLPAREN expression TRPAREN statement TELSE statement        
+                           | TIF TLPAREN expression error statement                          { yyerrok; reportParserError("if_st MISSING PAREN"); }
+                           | TIF error expression TRPAREN statement                          { yyerrok; reportParserError("if_st MISSING PAREN"); };
+while_st                   : TWHILE TLPAREN expression TRPAREN statement                     
+                           | TWHILE TLPAREN expression error statement                       { yyerrok; reportParserError("while_st MISSING PAREN"); }
+                           | TWHILE error expression TRPAREN statement                       { yyerrok; reportParserError("while_st MISSING PAREN"); };
+return_st                  : TRETURN expression_st                                           ;
+expression                 : assignment_exp                                                  
                            ;
 assignment_exp             : logical_or_exp 
-                           | postfix_exp assignment_op assignment_exp                        { semantic(55); }
-                           | postfix_exp assignment_op error                                 { yyerrok; ReportParserError("NO_RIGHT_ASSIGNMENT_EXP"); }
+                           | postfix_exp assignment_op assignment_exp                        
+                           | postfix_exp assignment_op error                                 { yyerrok; reportParserError("NO_RIGHT_ASSIGNMENT_EXP"); }
                            ;
 assignment_op              : TASSIGN                                                  
                            | TADDASSIGN
@@ -167,64 +166,64 @@ assignment_op              : TASSIGN
                            | TDIVASSIGN
                            | TMODASSIGN
                            ;
-logical_or_exp             : logical_and_exp                                                 { semantic(61); }
-                           | logical_or_exp TOR logical_and_exp                              { semantic(62); };
-                           | logical_or_exp TOR error                                        { yyerrok; ReportParserError("NO_RIGHT_LOGICAL_OR_EXP");};
-logical_and_exp            : equality_exp                                                    { semantic(63); }
-                           | logical_and_exp TAND equality_exp                               { semantic(64); };
-                           | logical_and_exp TAND error                                      { yyerrok; ReportParserError("NO_RIGHT_LOGICAL_AND_EXP");};
-equality_exp               : relational_exp                                                  { semantic(65); }
-                           | equality_exp TEQUAL relational_exp                              { semantic(66); }
-                           | equality_exp TNOTEQU relational_exp                             { semantic(67); }
-                           | equality_exp TEQUAL error                                       { yyerrok; ReportParserError("NO_RIGHT_TEQUAL_EXP");}
-                           | equality_exp TNOTEQU error                                      { yyerrok; ReportParserError("NO_RIGHT_TNOTEQU_EXP");}
+logical_or_exp             : logical_and_exp                                                 
+                           | logical_or_exp TOR logical_and_exp                              ;
+                           | logical_or_exp TOR error                                        { yyerrok; reportParserError("NO_RIGHT_LOGICAL_OR_EXP");};
+logical_and_exp            : equality_exp                                                    
+                           | logical_and_exp TAND equality_exp                               ;
+                           | logical_and_exp TAND error                                      { yyerrok; reportParserError("NO_RIGHT_LOGICAL_AND_EXP");};
+equality_exp               : relational_exp                                                  
+                           | equality_exp TEQUAL relational_exp                              
+                           | equality_exp TNOTEQU relational_exp                             
+                           | equality_exp TEQUAL error                                       { yyerrok; reportParserError("NO_RIGHT_TEQUAL_EXP");}
+                           | equality_exp TNOTEQU error                                      { yyerrok; reportParserError("NO_RIGHT_TNOTEQU_EXP");}
                            ;
-relational_exp             : additive_exp                                                    { semantic(68); }
-                           | relational_exp TGREAT additive_exp                              { semantic(69); }
-                           | relational_exp TLESS additive_exp                               { semantic(70); }
-                           | relational_exp TGREATE additive_exp                             { semantic(71); }
-                           | relational_exp TLESSE additive_exp                              { semantic(72); }
-                           | relational_exp TGREAT error                                     { yyerrok; ReportParserError("NO_RIGHT_TGREAT_EXP");}
-                           | relational_exp TLESS error                                      { yyerrok; ReportParserError("NO_RIGHT_TELSE_EXP");}
-                           | relational_exp TGREATE error                                    { yyerrok; ReportParserError("NO_RIGHT_TGREATE_EXP");}
-                           | relational_exp TLESSE error                                     { yyerrok; ReportParserError("NO_RIGHT_TLESSE_EXP");}
+relational_exp             : additive_exp                                                    
+                           | relational_exp TGREAT additive_exp                              
+                           | relational_exp TLESS additive_exp                               
+                           | relational_exp TGREATE additive_exp                             
+                           | relational_exp TLESSE additive_exp                              
+                           | relational_exp TGREAT error                                     { yyerrok; reportParserError("NO_RIGHT_TGREAT_EXP");}
+                           | relational_exp TLESS error                                      { yyerrok; reportParserError("NO_RIGHT_TELSE_EXP");}
+                           | relational_exp TGREATE error                                    { yyerrok; reportParserError("NO_RIGHT_TGREATE_EXP");}
+                           | relational_exp TLESSE error                                     { yyerrok; reportParserError("NO_RIGHT_TLESSE_EXP");}
                            ;
-additive_exp               : multiplicative_exp                                              { semantic(73); }
-                           | additive_exp TADD multiplicative_exp                            { semantic(74); }
-                           | additive_exp TSUB multiplicative_exp                            { semantic(75); }
-                           | additive_exp TADD error                                         { yyerrok; ReportParserError("NO_RIGHT_TADD_EXP");}
-                           | additive_exp TSUB error                                         { yyerrok; ReportParserError("NO_RIGHT_TSUB_EXP");}
+additive_exp               : multiplicative_exp                                              
+                           | additive_exp TADD multiplicative_exp                            
+                           | additive_exp TSUB multiplicative_exp                            
+                           | additive_exp TADD error                                         { yyerrok; reportParserError("NO_RIGHT_TADD_EXP");}
+                           | additive_exp TSUB error                                         { yyerrok; reportParserError("NO_RIGHT_TSUB_EXP");}
                            ;
-multiplicative_exp         : unary_number                                                    { semantic(76); }
-                           | multiplicative_exp TMUL unary_number                            { semantic(77); }
-                           | multiplicative_exp TDIV unary_number                            { semantic(78); }
-                           | multiplicative_exp TMOD unary_number                            { semantic(79); }
-                           | multiplicative_exp TMUL error                                   { yyerrok; ReportParserError("NO_RIGHT_TMUL_EXP"); }
-                           | multiplicative_exp TDIV error                                   { yyerrok; ReportParserError("NO_RIGHT_TDIV_EXP"); }
-                           | multiplicative_exp TMOD error                                   { yyerrok; ReportParserError("NO_RIGHT_TMOD_EXP"); }
+multiplicative_exp         : unary_number                                                    
+                           | multiplicative_exp TMUL unary_number                            
+                           | multiplicative_exp TDIV unary_number                            
+                           | multiplicative_exp TMOD unary_number                            
+                           | multiplicative_exp TMUL error                                   { yyerrok; reportParserError("NO_RIGHT_TMUL_EXP"); }
+                           | multiplicative_exp TDIV error                                   { yyerrok; reportParserError("NO_RIGHT_TDIV_EXP"); }
+                           | multiplicative_exp TMOD error                                   { yyerrok; reportParserError("NO_RIGHT_TMOD_EXP"); }
                            ;
 unary_number               : unary_exp
-                           | TNUMBER                                                         { if (getIdentType(identStr) != int_scalar_variable) ReportParserError("type mismatch in assignment"); }
-                           | TFNUMBER                                                        { if (getIdentType(identStr) != float_scalar_variable) ReportParserError("type mismatch in assignment"); }                                  
+                           | TNUMBER                                                         { if (getIdentType(identStr) != int_scalar_variable) reportParserError("type mismatch in assignment"); }
+                           | TFNUMBER                                                        { if (getIdentType(identStr) != float_scalar_variable) reportParserError("type mismatch in assignment"); }                                  
                            ;
-unary_exp                  : postfix_exp                                                     { semantic(80); } // 할당문 좌변
-                           | TSUB unary_exp                                                  { semantic(81); }
-                           | TNOT unary_exp                                                  { semantic(82); }
-                           | TINC unary_exp                                                  { semantic(83); }
-                           | TDEC unary_exp                                                  { semantic(84); }
+unary_exp                  : postfix_exp                                                      // 할당문 좌변
+                           | TSUB unary_exp                                                  
+                           | TNOT unary_exp                                                  
+                           | TINC unary_exp                                                  
+                           | TDEC unary_exp                                                  
                            ;
-postfix_exp                : primary_exp                                                     { semantic(85); }
-                           | postfix_exp TLBRACKET expression TRBRACKET                      { semantic(86); } // 배열 인덱스 접근
+postfix_exp                : primary_exp                                                     
+                           | postfix_exp TLBRACKET expression TRBRACKET                       // 배열 인덱스 접근
                            | postfix_exp TLPAREN opt_actual_param TRPAREN                    { isIllegalInvoke(currentFunctionName); } // 함수 호출
-                           | postfix_exp TINC                                                { semantic(88); } // a++
-                           | postfix_exp TDEC                                                { semantic(89); } // a--
-                           | postfix_exp TLBRACKET expression error                          { yyerrok; ReportParserError("postfix_exp"); }
-                           | postfix_exp TLPAREN opt_actual_param error                      { yyerrok; ReportParserError("postfix_exp"); }
+                           | postfix_exp TINC                                                 // a++
+                           | postfix_exp TDEC                                                 // a--
+                           | postfix_exp TLBRACKET expression error                          { yyerrok; reportParserError("postfix_exp"); }
+                           | postfix_exp TLPAREN opt_actual_param error                      { yyerrok; reportParserError("postfix_exp"); }
                            ;
-opt_actual_param           : actual_param                                                    { semantic(90); }
-                           |                                                                 { semantic(91); };
-actual_param               : actual_param_list                                               { semantic(92); };
-param_type                 : ident                                                           { if (!checkIdentExists(identStr)) ReportParserError("invalid identifier");
+opt_actual_param           : actual_param                                                    
+                           |                                                                 ;
+actual_param               : actual_param_list                                               ;
+param_type                 : ident                                                           { if (!checkIdentExists(identStr)) reportParserError("identifier does not exists");
                                                                                                 updateInvokedFuncArgs(getParamType(identStr));}
                            | TNUMBER                                                         { updateInvokedFuncArgs(int_scalar_parameter);}
                            | TFNUMBER                                                        { updateInvokedFuncArgs(float_scalar_parameter);}
@@ -232,21 +231,14 @@ param_type                 : ident                                              
 actual_param_list          : param_type                                                       
                            | actual_param_list TCOMMA param_type                              
                            ;
-primary_exp                : TIDENT                                                          { 
-                                                                                                strcpy_s(currentFunctionName, sizeof(currentFunctionName), identStr);
+primary_exp                : TIDENT                                                          { strcpy_s(currentFunctionName, sizeof(currentFunctionName), identStr);
                                                                                                 dataType* invoked_func_args = (dataType*)malloc(0);
                                                                                                 invoked_func_args_cnt = 0;
-                                                                                                if (!checkIdentExists(identStr)) ReportParserError("invalid identifier"); }
+                                                                                                if (!checkIdentExists(identStr)) reportParserError("identifier does not exists"); }
                            | TERROR                           
-                           | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp"); }
-                           | TLPAREN expression TRPAREN                                      { semantic(97); };
+                           | TLPAREN expression error                                        { yyerrok; reportParserError("primary_exp"); }
+                           | TLPAREN expression TRPAREN                                      ;
 %%  
-
-void semantic(int n)
-{
-   // printf("reduced rule number = %d\n", n);
-}
-
 HTpointer getIdentHash(const char *identifier)
 {
    // 해당 identifier의 해시코드 구하기
@@ -325,14 +317,12 @@ dataType classifyDataType(int numType, dataType variableType, int is_param) {
     return type;
 }
 
-void updateIdentType(int numType, dataType variableType, const char *identifier) 
+void updateIdentType(int numType, dataType variableType, int is_param, const char *identifier) 
 {
    // printf("-------------------------updateIdentType-------------------------\n");
-    HTpointer hash_ident = getIdentHash(identifier); 
-    // printf("identifier: %s\n", identifier);
 
     // 자료형 구분
-    dataType identType = classifyDataType(numType, variableType, 0);
+    dataType identType = classifyDataType(numType, variableType, is_param);
 
     // sym_table에서 identifier 정보 가져오기
     HTpointer hash_ident = getIdentHash(identifier); 
@@ -347,7 +337,7 @@ void updateIdentType(int numType, dataType variableType, const char *identifier)
     } 
     else {
         if (sym_ident.linenumber != lineNumber) {
-            ReportParserError("Already declared");
+            reportParserError("identifier is already declared");
         }
     }
     // printf("updateIdentType complete\n");
@@ -361,7 +351,7 @@ void updateReturnType(int returnType, const char *identifier)
    // identifier의 type 정보가 function일 경우에만 return값 정보 업데이트
    struct Ident sym_ident = sym_table[hash_ident->index];   
    if (sym_ident.ident_type == function) {	// type이 function name인 경우
-      sym_ident.return_type = returntype;	// 매개변수로 받은 returntype 설정
+      sym_ident.return_type = returnType;	// 매개변수로 받은 returntype 설정
       // printf("sym_ident.ident_type: %s\n", dataTypesChar[sym_ident.ident_type]);
       sym_table[hash_ident->index] = sym_ident;
    } 
@@ -380,7 +370,7 @@ void updateFunctionParameter(int type, dataType variableType, const char *functi
 
    // 자료형 구분
    dataType paramType = classifyDataType(type, variableType, 1);
-   printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramType], function_name);
+   //printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramType], function_name);
    struct Ident sym_ident = sym_table[hash_ident->index];   
    
    // function_name type이 function일 경우에만 파라미터 타입 정보 업데이트
@@ -390,7 +380,7 @@ void updateFunctionParameter(int type, dataType variableType, const char *functi
       sym_ident.param[sym_ident.param_count-1] = paramType;
       
       sym_table[hash_ident->index] = sym_ident;
-      printf("updateFunctionParameter complete\n");
+      //printf("updateFunctionParameter complete\n");
    }
    // printf("updateFunctionParameter complete\n");
 }
@@ -433,10 +423,10 @@ void isIllegalInvoke(const char *function_name){
    struct Ident sym_ident = sym_table[hash_ident->index];
 
    // function_name의 type 정보가 function이 아니거나 파라미터 개수가 맞지 않으면 에러 발생
-   printf("function parameter count: %d, actual argument count: %d\n", sym_ident.param_count, invoked_func_args_cnt);
+   //printf("function parameter count: %d, actual argument count: %d\n", sym_ident.param_count, invoked_func_args_cnt);
 
    if (sym_ident.ident_type != function || sym_ident.param_count != invoked_func_args_cnt) {
-      ReportParserError("Invalid function call.");
+      reportParserError("invalid function call");
       // free(invoked_func_args);
       return;
    }
@@ -445,7 +435,7 @@ void isIllegalInvoke(const char *function_name){
    for(int i=0; i<invoked_func_args_cnt; i++){
       if(sym_ident.param[i] != invoked_func_args[i]){
          printf("sym_ident.param: %s, invoked_func_args: %s\n", sym_ident.param[i], invoked_func_args[i]);
-         ReportParserError("Invalid function call.");
+         reportParserError("Invalid function call.");
          // free(invoked_func_args);
          return;
       }
@@ -463,7 +453,7 @@ void isIllegalInvoke(const char *function_name){
       // ("Checking param %d: sym_ident.param: %d, invoked_func_args: %d\n", i, sym_ident.param[i], invoked_func_args[i]);
       if(sym_ident.param[i] != invoked_func_args[i]){
          // printf("Mismatch: sym_ident.param: %d, invoked_func_args: %d\n", sym_ident.param[i], invoked_func_args[i]);
-         ReportParserError("Invalid function call.");
+         reportParserError("Invalid function call.");
          return;
       }
    }
