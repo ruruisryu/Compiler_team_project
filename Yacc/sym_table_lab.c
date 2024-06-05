@@ -21,7 +21,9 @@ const char* dataTypesChar[] = {
     "int_array_parameter",
     "float_array_parameter",
     "function\t",
-    "none\t"
+    "none\t",
+    "scalar",
+    "array",
 };
 // sym_table struct
 // Index | Line | Symbol | Type | ReturnType | Parameter 
@@ -46,10 +48,10 @@ void init_sym_table() {
 void print_sym_table() {
     int i;
     printf("\nSymbol Table\n");
-    printf("Index\tLine\tSymbol\tType\tReturnType\tParameter\n");
+    printf("Index\tLine\tSymbol\tType\t\t\tReturnType\t\tParameter\n");
     for (i = 0; i < SYM_TABLE_SIZE; i++) {
         if (sym_table[i].strpool_idx != -1) {
-            printf("[%d]\t%d\t%s\t%s\t%s\t\t", i, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, dataTypesChar[sym_table[i].ident_type], dataTypesChar[sym_table[i].return_type]);
+            printf("[%d]\t%d\t%s\t%s\t%s\t", i, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, dataTypesChar[sym_table[i].ident_type], dataTypesChar[sym_table[i].return_type]);
             for (int j = 0; j < sym_table[i].param_count; j++) {
                 printf("%s ", dataTypesChar[sym_table[i].param[j]]);
             }

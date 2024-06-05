@@ -21,7 +21,9 @@ typedef enum dataType {
 	int_array_parameter,
 	float_array_parameter,
 	function,
-	none
+	none,
+	scalar,
+	array
 }dataType;
 
 typedef struct Ident {
