@@ -9,6 +9,7 @@
 char separators[] = " ,;\t\n\r\n";
 char str_pool[MAX_STR_POOL];
 
+// const char* array for print dataType
 const char* dataTypesChar[] = {
     "void_return",
     "int_scalar_variable",
@@ -24,20 +25,19 @@ const char* dataTypesChar[] = {
     "scalar",
     "array",
 };
-// sym_table ����
-// StringPoolIndex | Length | Line
+// sym_table struct
+// Index | Line | Symbol | Type | ReturnType | Parameter 
 
 #define isLetter(x) ( ((x) >= 'a' && (x) <='z') || ((x) >= 'A' && (x) <= 'Z') || ((x) == '_')) 
 #define isDigit(x) ( (x) >= '0' && (x) <= '9' )
 
+// symbol table initialize
 void init_sym_table() {
     int i;
     for (i = 0; i < SYM_TABLE_SIZE; i++) {
         sym_table[i].strpool_idx = -1;
         sym_table[i].len = -1;
         sym_table[i].linenumber = lineNumber;
-
-        // Ensure null-termination
         sym_table[i].ident_type = none;
         sym_table[i].return_type = none;
         sym_table[i].param = (dataType*)malloc(0);
@@ -63,17 +63,16 @@ void print_sym_table() {
 HTpointer lookup_hash_table(char* sym, int hscode) {
     HTpointer entry = HT[hscode];
 
-    // ü�̴׵� ����Ʈ�� Ž��
     while (entry != NULL) {
         if (strcmp(str_pool+(sym_table[entry->index].strpool_idx), sym) == 0) {
-            return entry; // ã�� �׸� ��ȯ
+            return entry; 
         }
         entry = entry->next;
     }
-    return NULL; // �׸��� ã�� ���� ���
+    return NULL;
 }
 
-// symbol table�� idx�� ����� symbol�� sym�� �Ȱ��� �̸��� ���� �ִ��� Ȯ���ؼ� ��ȯ
+// 심볼테이블의 idx번째 인덱스에 저장된 identifier 이름이 sym과 동일한지 체크하는 함수
 bool lookup_sym_table(char* sym, int idx) {
     if (strcmp(str_pool + (sym_table[idx].strpool_idx), sym) == 0) {
         return true;
@@ -82,7 +81,6 @@ bool lookup_sym_table(char* sym, int idx) {
 }
 
 void add_hash_table(int id_index, int hscode) {
-    // �� �׸� ���� �� �ʱ�ȭ
     HTpointer newEntry = (HTpointer)malloc(sizeof(HTentry));
     if (newEntry == NULL) {
         printf("�޸� �Ҵ� ����\n");
@@ -92,11 +90,9 @@ void add_hash_table(int id_index, int hscode) {
     newEntry->next = NULL;
 
     if (HT[hscode] == NULL) {
-        // ù ��° �׸����� �߰�
         HT[hscode] = newEntry;
     }
     else {
-        // �̹� �׸��� ������, ����Ʈ�� �� �տ� �߰�
         newEntry->next = HT[hscode];
         HT[hscode] = newEntry;
     }
@@ -124,9 +120,6 @@ void SymbolTable(char* ident, int len) {
     strcpy_s(identStr, sizeof(identStr), ident);
 
     if (str_pool_index + len > MAX_STR_POOL) {
-        //�ؽ� ���
-        //�ߺ��� �ĺ��� ������ ��� ��� ����
-        //�ߺ��� �ĺ��ڰ� �������� ���� ���� �����÷ο� ���� �߻���Ű�� ����
         hash_value = divisionMethod(ident, HASH_TABLE_SIZE);
 
         HTpointer htp = lookup_hash_table(ident, hash_value);
