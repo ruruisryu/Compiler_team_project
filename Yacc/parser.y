@@ -27,6 +27,7 @@ int returnType = 0;
 char currentFunctionName[1000]; // 함수 이름 저장용 전역 변수
 
 dataType* invoked_func_args;
+dataType currentArgumentType; // 현재 인수의 타입을 저장하기 위한 전역 변수
 int invoked_func_args_cnt = 0;
 %}
 
@@ -98,10 +99,10 @@ formal_param_list          : param_dcl                                          
                            | formal_param_list TCOMMA param_dcl                              { semantic(21); }
                            | formal_param_list param_dcl error                               { yyerrok; ReportParserError("NO_COMMA"); }
                            ;
-param_dcl                  : dcl_specifier ident                                             { if (returnType==1) {updateIdentType(int_scalar_parameter, identStr); updateFunctionParameter(int_scalar_parameter, currentFunctionName); } 
-                                                                                                else if (returnType ==2) {updateIdentType(float_scalar_parameter, identStr);  updateFunctionParameter(float_scalar_parameter, currentFunctionName);}} 
-                           | dcl_specifier array                                             { if (returnType==1) {updateIdentType(int_array_parameter, identStr); updateFunctionParameter(int_array_parameter, currentFunctionName);} 
-                                                                                                else if (returnType ==2) {updateIdentType(float_array_parameter, identStr); updateFunctionParameter(float_array_parameter, currentFunctionName);}}  
+param_dcl                  : dcl_specifier ident                                             { if (returnType==1) {updateIdentType(int_scalar_parameter, identStr); updateFunctionParameter(int_scalar_parameter, currentFunctionName); currentArgumentType = int_scalar_parameter; } 
+                                                                                                else if (returnType ==2) {updateIdentType(float_scalar_parameter, identStr);  updateFunctionParameter(float_scalar_parameter, currentFunctionName); currentArgumentType = float_scalar_parameter;}} 
+                           | dcl_specifier array                                             { if (returnType==1) {updateIdentType(int_array_parameter, identStr); updateFunctionParameter(int_array_parameter, currentFunctionName); currentArgumentType = int_array_parameter;} 
+                                                                                                else if (returnType ==2) {updateIdentType(float_array_parameter, identStr); updateFunctionParameter(float_array_parameter, currentFunctionName); currentArgumentType = float_array_parameter}}  
                            | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE opt_block_items TRBRACE                                 { semantic(23); }
                            | TLBRACE opt_block_items error                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); }
@@ -232,7 +233,7 @@ unary_exp                  : postfix_exp                                        
                            ;
 postfix_exp                : primary_exp                                                     { semantic(85); }
                            | postfix_exp TLBRACKET expression TRBRACKET                      { semantic(86); } // 배열 인덱스 접근
-                           | postfix_exp TLPAREN opt_actual_param TRPAREN                    { semantic(87); } // 함수 호출
+                           | postfix_exp TLPAREN opt_actual_param TRPAREN                    { isIllegalInvoke(currentFunctionName); } // 함수 호출
                            | postfix_exp TINC                                                { semantic(88); } // a++
                            | postfix_exp TDEC                                                { semantic(89); } // a--
                            | postfix_exp TLBRACKET expression error                          { yyerrok; ReportParserError("postfix_exp"); }
@@ -241,8 +242,9 @@ postfix_exp                : primary_exp                                        
 opt_actual_param           : actual_param                                                    { semantic(90); }
                            |                                                                 { semantic(91); };
 actual_param               : actual_param_list                                               { semantic(92); };
-actual_param_list          : assignment_exp                                                  { semantic(93); }
-                           | actual_param_list TCOMMA assignment_exp                         { semantic(94); };
+param_type                 : 
+actual_param_list          : param_type                                                      { semantic(93); updateInvokedFuncArgs(currentArgumentType);}
+                           | actual_param_list TCOMMA param_type                             { semantic(94); updateInvokedFuncArgs(currentArgumentType);};
 primary_exp                : TIDENT                                                          { if (!checkIdentExists(identStr)) { ReportParserError("invalid identifier"); }}
                            | TERROR                           
                            | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp"); }
