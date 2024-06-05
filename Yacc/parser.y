@@ -102,7 +102,7 @@ formal_param_list          : param_dcl                                          
 param_dcl                  : dcl_specifier ident                                             { if (returnType==1) {updateIdentType(int_scalar_parameter, identStr); updateFunctionParameter(int_scalar_parameter, currentFunctionName); currentArgumentType = int_scalar_parameter; } 
                                                                                                 else if (returnType ==2) {updateIdentType(float_scalar_parameter, identStr);  updateFunctionParameter(float_scalar_parameter, currentFunctionName); currentArgumentType = float_scalar_parameter;}} 
                            | dcl_specifier array                                             { if (returnType==1) {updateIdentType(int_array_parameter, identStr); updateFunctionParameter(int_array_parameter, currentFunctionName); currentArgumentType = int_array_parameter;} 
-                                                                                                else if (returnType ==2) {updateIdentType(float_array_parameter, identStr); updateFunctionParameter(float_array_parameter, currentFunctionName); currentArgumentType = float_array_parameter}}  
+                                                                                                else if (returnType ==2) {updateIdentType(float_array_parameter, identStr); updateFunctionParameter(float_array_parameter, currentFunctionName); currentArgumentType = float_array_parameter;}};  
                            | dcl_specifier function_prototype                                ;
 compound_st                : TLBRACE opt_block_items TRBRACE                                 { semantic(23); }
                            | TLBRACE opt_block_items error                                   { yyerrok; ReportParserError("compound_st MISSING RBRACE"); }
@@ -242,10 +242,14 @@ postfix_exp                : primary_exp                                        
 opt_actual_param           : actual_param                                                    { semantic(90); }
                            |                                                                 { semantic(91); };
 actual_param               : actual_param_list                                               { semantic(92); };
-param_type                 : 
-actual_param_list          : param_type                                                      { semantic(93); updateInvokedFuncArgs(currentArgumentType);}
-                           | actual_param_list TCOMMA param_type                             { semantic(94); updateInvokedFuncArgs(currentArgumentType);};
-primary_exp                : TIDENT                                                          { if (!checkIdentExists(identStr)) { ReportParserError("invalid identifier"); }}
+param_type                 : ident                                                           
+                           | TNUMBER                                                         
+                           | TFNUMBER                                                        
+                           ;
+actual_param_list          : param_type                                                      { updateInvokedFuncArgs(currentArgumentType);} 
+                           | actual_param_list TCOMMA param_type                             { updateInvokedFuncArgs(currentArgumentType);} 
+                           ;
+primary_exp                : TIDENT                                                          { if (!checkIdentExists(identStr)) ReportParserError("invalid identifier"); }
                            | TERROR                           
                            | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp"); }
                            | TLPAREN expression TRPAREN                                      { semantic(97); };
