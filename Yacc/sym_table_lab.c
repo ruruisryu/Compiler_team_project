@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -8,6 +8,20 @@
 
 char separators[] = " ,;\t\n\r\n";
 char str_pool[MAX_STR_POOL];
+
+const char* dataTypesChar[] = {
+    "void_return",
+    "int_scalar_variable",
+    "float_scalar_variable",
+    "int_array_variable",
+    "float_array_variable",
+    "int_scalar_parameter",
+    "float_scalar_parameter",
+    "int_array_parameter",
+    "float_array_parameter",
+    "function\t",
+    "none\t"
+};
 // sym_table ����
 // StringPoolIndex | Length | Line
 
@@ -20,25 +34,26 @@ void init_sym_table() {
         sym_table[i].strpool_idx = -1;
         sym_table[i].len = -1;
         sym_table[i].linenumber = lineNumber;
-        strncpy_s(sym_table[i].ident_type, sizeof(sym_table[i].ident_type), "none", _TRUNCATE);
-        strncpy_s(sym_table[i].param, sizeof(sym_table[i].param), "none", _TRUNCATE);
-        strncpy_s(sym_table[i].return_type, sizeof(sym_table[i].return_type), "none", _TRUNCATE);
-
 
         // Ensure null-termination
-        sym_table[i].ident_type[sizeof(sym_table[i].ident_type) - 1] = '\0';
-        sym_table[i].param[sizeof(sym_table[i].param) - 1] = '\0';
-        sym_table[i].return_type[sizeof(sym_table[i].return_type) - 1] = '\0';
+        sym_table[i].ident_type = none;
+        sym_table[i].return_type = none;
+        sym_table[i].param = (dataType*)malloc(0);
+        sym_table[i].param_count = 0;
     }
 }
 
 void print_sym_table() {
     int i;
     printf("\nSymbol Table\n");
-    printf("Index\tStrPool\tLength\tLine\tSymbol\n");
+    printf("Index\tLine\tSymbol\tType\tReturnType\tParameter\n");
     for (i = 0; i < SYM_TABLE_SIZE; i++) {
         if (sym_table[i].strpool_idx != -1) {
-            printf("[%d]\t%d\t%d\t%d\t%s\t%s\t%s\t%s\n", i, sym_table[i].strpool_idx, sym_table[i].len, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, sym_table[i].ident_type, sym_table[i].param, sym_table[i].return_type);
+            printf("[%d]\t%d\t%s\t%s\t%s\t\t", i, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, dataTypesChar[sym_table[i].ident_type], dataTypesChar[sym_table[i].return_type]);
+            for (int j = 0; j < sym_table[i].param_count; j++) {
+                printf("%s ", dataTypesChar[sym_table[i].param[j]]);
+            }
+            printf("\n");
         }
     }
 }

@@ -5,22 +5,34 @@
 #define SYM_TABLE_SIZE	100
 #define HASH_TABLE_SIZE 11
 #define MAX_STR_POOL	200
-#define MAX_PARAMS_LENGTH 100
-#define MAX_IDENTYPE_LENGTH 100
-#define MAX_RETYPE_LENGTH 100
 
 void init_sym_table();
 void print_sym_table();
 void print_hash_table();
 
+typedef enum dataType {
+	void_return,
+	int_scalar_variable,
+	float_scalar_variable,
+	int_array_variable,
+	float_array_variable,
+	int_scalar_parameter,
+	float_scalar_parameter,
+	int_array_parameter,
+	float_array_parameter,
+	function,
+	none
+}dataType;
+
 typedef struct Ident {
     int strpool_idx;
     int len;
     int linenumber;
-    char ident_type[MAX_IDENTYPE_LENGTH];
-    char param[MAX_PARAMS_LENGTH];
-    char return_type[MAX_RETYPE_LENGTH];
-};
+    dataType ident_type;
+    dataType return_type;
+    dataType* param;
+    int param_count;
+}Ident;
 
 typedef struct HTentry* HTpointer;
 typedef struct HTentry {
