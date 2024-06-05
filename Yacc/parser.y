@@ -286,7 +286,7 @@ int checkIdentExists(const char *identifier)
 }
 
 dataType classifyDataType(int numType, dataType variableType, int is_param) {
-    dataType type = scalar;
+    dataType type = none;
 
     if (numType == 1) { // int
         if (variableType == scalar) {
@@ -307,7 +307,6 @@ dataType classifyDataType(int numType, dataType variableType, int is_param) {
     }
     return type;
 }
-
 
 void updateIdentType(int numType, dataType variableType, const char *identifier) 
 {
@@ -348,7 +347,7 @@ void updateReturnType(int returnType, const char *identifier)
    // identifier의 type이 function일 경우에만 return값 정보 업데이트
    // 그 외에 경우에는 return 값이 존재하지 않으므로 none으로 업데이트
    if (sym_ident.ident_type == function) {	
-      sym_ident.return_type = returntype;	
+      sym_ident.return_type = returnType;	
       printf("sym_ident.ident_type: %s\n", dataTypesChar[sym_ident.ident_type]);
       sym_table[hash_ident->index] = sym_ident;
    } 
@@ -363,23 +362,18 @@ void updateReturnType(int returnType, const char *identifier)
 void updateFunctionParameter(int type, dataType variableType, const char *function_name)
 {
    printf("-------------------------updateFunctionParameter-------------------------\n");
-   printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramtype], function_name);
    HTpointer hash_ident = getIdentHash(function_name);    
-    
-   if (hash_ident != NULL) {
-        // 처리해주기
-   }
 
    // 자료형 구분
-   dataType paramtype = classifyDataType(type, variableType, 1);
-   printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramtype], function_name);
+   dataType paramType = classifyDataType(type, variableType, 1);
+   printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramType], function_name);
    struct Ident sym_ident = sym_table[hash_ident->index];   
    
    // function_name type이 function일 경우에만 파라미터 타입 정보 업데이트
    if (sym_ident.ident_type == function) {	
       sym_ident.param_count++;
       sym_ident.param = (dataType*)realloc(sym_ident.param, (sym_ident.param_count)*sizeof(dataType));
-      sym_ident.param[sym_ident.param_count-1] = paramtype;
+      sym_ident.param[sym_ident.param_count-1] = paramType;
       
       sym_table[hash_ident->index] = sym_ident;
       printf("updateFunctionParameter complete\n");
