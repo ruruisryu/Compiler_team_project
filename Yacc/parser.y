@@ -387,19 +387,34 @@ void updateFunctionParameter(dataType paramtype, const char *function_name)
    printf("updateFunctionParameter complete\n");
 }
 
-
 void updateInvokedFuncArgs(dataType argument_type){
    printf("-------------------------updateInvokedFuncArgs-------------------------\n");
+   
    if(invoked_func_args == NULL){
       printf("invoked_func_args is NULL \n");
-      invoked_func_args = (dataType*)malloc(0);
+      invoked_func_args = (dataType*)malloc(sizeof(dataType));
+      if (invoked_func_args == NULL) {
+          fprintf(stderr, "Memory allocation failed\n");
+          exit(EXIT_FAILURE);
+      }
+      invoked_func_args_cnt = 1;
+   } else {
+      invoked_func_args_cnt++;
+      dataType* temp = (dataType*)realloc(invoked_func_args, invoked_func_args_cnt * sizeof(dataType));
+      if (temp == NULL) {
+          fprintf(stderr, "Memory reallocation failed\n");
+          free(invoked_func_args);  // 기존 메모리를 해제하여 메모리 누수를 방지
+          exit(EXIT_FAILURE);
+      }
+      invoked_func_args = temp;
    }
+
    printf("invoked_func_args_cnt: %d\n", invoked_func_args_cnt);
-   invoked_func_args = (dataType*)realloc(invoked_func_args, (++invoked_func_args_cnt)*sizeof(dataType));
    invoked_func_args[invoked_func_args_cnt-1] = argument_type;
    
    printf("updateInvokedFuncArgs complete\n");
 }
+
 
 // 함수 정의와 일치하는 호출인지 확인하는 함수
 void isIllegalInvoke(const char *function_name){
@@ -413,17 +428,19 @@ void isIllegalInvoke(const char *function_name){
 
    if (sym_ident.ident_type != function || sym_ident.param_count != invoked_func_args_cnt) {
       ReportParserError("Invalid function call.");
-      free(invoked_func_args);
+      // free(invoked_func_args);
       return;
    }
    // 파라미터 타입 배열을 돌면서 일치하지 않는 파라미터 타입이 있다면 에러 발생
    for(int i=0; i<invoked_func_args_cnt; i++){
       if(sym_ident.param[i] != invoked_func_args[i]){
+         printf("sym_ident.param: %s, invoked_func_args: %s\n", sym_ident.param[i], invoked_func_args[i]);
+
          ReportParserError("Invalid function call.");
-         free(invoked_func_args);
+         // free(invoked_func_args);
          return;
       }
    }
    printf("isIllegalInvoke complete.\n");
-   free(invoked_func_args);
+   // free(invoked_func_args);
 }
