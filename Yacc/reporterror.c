@@ -32,7 +32,7 @@ void ReportError(ERRORtypes err)
 	printf("%d: %s\n", lineNumber, error_message); 
 }
 
-void ReportParserError(char* message) {
+void reportParserError(char* message) {
 	error_cnt++;
 	printf("(line: %d) %s\n", lineNumber, message);
 }

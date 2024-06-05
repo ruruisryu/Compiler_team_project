@@ -62,15 +62,6 @@ char str_tokentypes[][16] = {
 	"LOWER_THAN_ELSE",
 };
 
-void PrintHeading()
-{
-	printf("\n\n");
-	printf("-----------        ------------         ------------         ------------ \n");
-	printf("Line Number         Token type              Token              ST-index   \n");
-	printf("-----------        ------------         ------------         ------------ \n");
-	printf("\n");
-}
-
 void printToken(enum tokentypes tn)
 {
 	switch (tn) {
@@ -88,7 +79,7 @@ void printToken(enum tokentypes tn)
 	}
 }
 
-//Token 인식하여 Token 및 에러 출력
+// Token 인식하여 Token 에러 및 구문 에러 출력
 void main()
 {
 	enum tokentypes tn;
@@ -96,7 +87,6 @@ void main()
 
 	printf("***MiniC parsing begins\n");
 	yyparse();
-
 	printf("Parsing ends.***\n\n ");
 	printf("%d error(s) detected\n", error_cnt);
 

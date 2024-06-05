@@ -55,14 +55,12 @@ enum errorTypes { noerror, illid_digit, illid_long, illch, real_num, overst };
 typedef enum errorTypes ERRORtypes;
 
 extern int lineNumber;
-extern int startLineNumber;//�ּ�ó���� ���� lineNumber�� �����ϴ� ����
+extern int startLineNumber;
 extern char error_message[];
 
-//lex ���� ����
 extern char* yytext;
 extern int yyleng;
 extern int yylex();
 
-//�ܺ� �Լ� ����
 extern void SymbolTable(char*, int);
 extern void ReportError(ERRORtypes err);
