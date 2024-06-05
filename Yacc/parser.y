@@ -239,6 +239,7 @@ primary_exp                : TIDENT                                             
                            | TLPAREN expression error                                        { yyerrok; reportParserError("primary_exp"); }
                            | TLPAREN expression TRPAREN                                      ;
 %%  
+// identifier의 해시테이블 포인터 값을 반환하는 함수
 HTpointer getIdentHash(const char *identifier)
 {
    // 해당 identifier의 해시코드 구하기
@@ -260,6 +261,7 @@ HTpointer getIdentHash(const char *identifier)
    return hash_ident;
 }
 
+// identifier의 타입을 반환하는 함수
 dataType getIdentType(const char *identifier)
 {
    HTpointer hash_ident = getIdentHash(identifier);
@@ -267,6 +269,7 @@ dataType getIdentType(const char *identifier)
    return sym_ident.ident_type;
 }
 
+// parameter의 타입을 반환하는 함수
 dataType getParamType(const char *identifier)
 {
    HTpointer hash_ident = getIdentHash(identifier);
@@ -280,6 +283,7 @@ dataType getParamType(const char *identifier)
    return sym_ident.ident_type;
 }
 
+// identifier가 심볼 테이블에 저장되어 있는지 확인하는 함수
 int checkIdentExists(const char *identifier)
 {
    HTpointer hash_ident = getIdentHash(identifier);
@@ -294,6 +298,7 @@ int checkIdentExists(const char *identifier)
    return 1;
 }
 
+// identifier의 구체적인 타입 값을 구하는 함수
 dataType classifyDataType(int numType, dataType variableType, int is_param) {
     dataType type = none;
 
@@ -317,10 +322,9 @@ dataType classifyDataType(int numType, dataType variableType, int is_param) {
     return type;
 }
 
+// identifier의 타입을 저장하는 함수
 void updateIdentType(int numType, dataType variableType, int is_param, const char *identifier) 
 {
-   // printf("-------------------------updateIdentType-------------------------\n");
-
     // 자료형 구분
     dataType identType = classifyDataType(numType, variableType, is_param);
 
@@ -333,44 +337,38 @@ void updateIdentType(int numType, dataType variableType, int is_param, const cha
     if (sym_ident.ident_type == NULL || sym_ident.ident_type == none) {
         sym_ident.ident_type = identType;
         sym_table[hash_ident->index] = sym_ident;
-        // printf("sym_ident.ident_type: %s\n", dataTypesChar[sym_ident.ident_type]);
     } 
     else {
         if (sym_ident.linenumber != lineNumber) {
             reportParserError("identifier is already declared");
         }
     }
-    // printf("updateIdentType complete\n");
 }
 
+// 함수의 리턴 타입을 업데이트하는 함수
 void updateReturnType(int returnType, const char *identifier)
 {
-  //  printf("-------------------------updateReturnType-------------------------\n");
    HTpointer hash_ident = getIdentHash(identifier);    
 
    // identifier의 type 정보가 function일 경우에만 return값 정보 업데이트
    struct Ident sym_ident = sym_table[hash_ident->index];   
    if (sym_ident.ident_type == function) {	// type이 function name인 경우
       sym_ident.return_type = returnType;	// 매개변수로 받은 returntype 설정
-      // printf("sym_ident.ident_type: %s\n", dataTypesChar[sym_ident.ident_type]);
       sym_table[hash_ident->index] = sym_ident;
    } 
    else {
       sym_ident.return_type = none;
       sym_table[hash_ident->index] = sym_ident;
    }
-   // printf("updateReturnType complete\n");
 }
 
+// 함수의 파라미터 정보를 업데이트하는 함수
 void updateFunctionParameter(int type, dataType variableType, const char *function_name)
 {
-   // printf("-------------------------updateFunctionParameter-------------------------\n");
-   // printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramtype], function_name);
    HTpointer hash_ident = getIdentHash(function_name);    
 
    // 자료형 구분
    dataType paramType = classifyDataType(type, variableType, 1);
-   //printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramType], function_name);
    struct Ident sym_ident = sym_table[hash_ident->index];   
    
    // function_name type이 function일 경우에만 파라미터 타입 정보 업데이트
@@ -380,17 +378,12 @@ void updateFunctionParameter(int type, dataType variableType, const char *functi
       sym_ident.param[sym_ident.param_count-1] = paramType;
       
       sym_table[hash_ident->index] = sym_ident;
-      //printf("updateFunctionParameter complete\n");
    }
-   // printf("updateFunctionParameter complete\n");
 }
 
+// 함수 호출 시 전달된 parameter list의 타입을 저장하는 함수
 void updateInvokedFuncArgs(dataType argument_type){
-   // printf("-------------------------updateInvokedFuncArgs-------------------------\n");
-   // printf("invoked func args: %s\n", dataTypesChar[argument_type]);
-
    if(invoked_func_args == NULL){
-      // printf("invoked_func_args is NULL \n");
       invoked_func_args = (dataType*)malloc(sizeof(dataType));
       if (invoked_func_args == NULL) {
           fprintf(stderr, "Memory allocation failed\n");
@@ -407,41 +400,19 @@ void updateInvokedFuncArgs(dataType argument_type){
       }
       invoked_func_args = temp;
    }
-
-   // printf("invoked_func_args_cnt: %d\n", invoked_func_args_cnt);
    invoked_func_args[invoked_func_args_cnt-1] = argument_type;
-   
-   // printf("updateInvokedFuncArgs complete\n");
 }
-
 
 // 함수 정의와 일치하는 호출인지 확인하는 함수
 void isIllegalInvoke(const char *function_name){
-   // printf("-------------------------isIllegalInvoke-------------------------\n");
-   // printf("function name: %s\n", function_name);
    HTpointer hash_ident = getIdentHash(function_name);    
    struct Ident sym_ident = sym_table[hash_ident->index];
 
    // function_name의 type 정보가 function이 아니거나 파라미터 개수가 맞지 않으면 에러 발생
-   //printf("function parameter count: %d, actual argument count: %d\n", sym_ident.param_count, invoked_func_args_cnt);
-
    if (sym_ident.ident_type != function || sym_ident.param_count != invoked_func_args_cnt) {
       reportParserError("invalid function call");
-      // free(invoked_func_args);
       return;
    }
-   /**
-   // 파라미터 타입 배열을 돌면서 일치하지 않는 파라미터 타입이 있다면 에러 발생
-   for(int i=0; i<invoked_func_args_cnt; i++){
-      if(sym_ident.param[i] != invoked_func_args[i]){
-         printf("sym_ident.param: %s, invoked_func_args: %s\n", sym_ident.param[i], invoked_func_args[i]);
-         reportParserError("Invalid function call.");
-         // free(invoked_func_args);
-         return;
-      }
-   }
-   */
-
 
    // 파라미터 타입 배열을 돌면서 일치하지 않는 파라미터 타입이 있다면 에러 발생
    for(int i=0; i<invoked_func_args_cnt; i++){
@@ -450,13 +421,9 @@ void isIllegalInvoke(const char *function_name){
          return;
       }
 
-      // ("Checking param %d: sym_ident.param: %d, invoked_func_args: %d\n", i, sym_ident.param[i], invoked_func_args[i]);
       if(sym_ident.param[i] != invoked_func_args[i]){
-         // printf("Mismatch: sym_ident.param: %d, invoked_func_args: %d\n", sym_ident.param[i], invoked_func_args[i]);
          reportParserError("Invalid function call.");
          return;
       }
    }
-   // printf("isIllegalInvoke complete.\n");
-   // free(invoked_func_args);
 }
