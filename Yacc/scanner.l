@@ -52,11 +52,9 @@ digit	[0-9]
                                         			if(yytext[i] == '\n')
                                             			lineNumber++;
                                     			}
-                                    			printf("%-20d %-20s %-20s\n", lineNumber, "TCOMMENT", yytext);  
                                 		} 
 "//".*                          		{
                                     			startLineNumber = lineNumber; 
-                                    			printf("%-20d %-20s %-20s\n", lineNumber, "TCOMMENT", yytext);  
                                 		}
 {letter}({letter}|{digit})*			{
     							if(yyleng >= 15)
@@ -73,7 +71,7 @@ digit	[0-9]
 							ReportError(illid_digit); 
 							return(TERROR);
 						}
-"\n"     					printf("lineNumber: %d\n", lineNumber); lineNumber++; 
+"\n"     					lineNumber++; 
 [ \t\r]   					;
 .                       				{ 
 							ReportError(illch);
