@@ -91,16 +91,9 @@ void printToken(enum tokentypes tn)
 //Token 인식하여 Token 및 에러 출력
 void main()
 {
-	printf("start of parser\n");
 	enum tokentypes tn;
-
 	init_sym_table();
 
-	PrintHeading();
-
-	//while ((tn = yylex()) != 0) {
-	//	printToken(tn);
-	//}
 	printf("***MiniC parsing begins\n");
 	yyparse();
 
@@ -109,7 +102,6 @@ void main()
 
 	print_sym_table();
 	print_hash_table();
-	printf("end of parser\n");
 
 	for (int i = 0; i < SYM_TABLE_SIZE; i++) {
 		free(sym_table[i].param);

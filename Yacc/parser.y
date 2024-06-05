@@ -328,8 +328,6 @@ dataType classifyDataType(int numType, dataType variableType, int is_param) {
 void updateIdentType(int numType, dataType variableType, const char *identifier) 
 {
    // printf("-------------------------updateIdentType-------------------------\n");
-    HTpointer hash_ident = getIdentHash(identifier); 
-    // printf("identifier: %s\n", identifier);
 
     // 자료형 구분
     dataType identType = classifyDataType(numType, variableType, 0);
@@ -361,7 +359,7 @@ void updateReturnType(int returnType, const char *identifier)
    // identifier의 type 정보가 function일 경우에만 return값 정보 업데이트
    struct Ident sym_ident = sym_table[hash_ident->index];   
    if (sym_ident.ident_type == function) {	// type이 function name인 경우
-      sym_ident.return_type = returntype;	// 매개변수로 받은 returntype 설정
+      sym_ident.return_type = returnType;	// 매개변수로 받은 returntype 설정
       // printf("sym_ident.ident_type: %s\n", dataTypesChar[sym_ident.ident_type]);
       sym_table[hash_ident->index] = sym_ident;
    } 
@@ -380,7 +378,7 @@ void updateFunctionParameter(int type, dataType variableType, const char *functi
 
    // 자료형 구분
    dataType paramType = classifyDataType(type, variableType, 1);
-   printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramType], function_name);
+   //printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramType], function_name);
    struct Ident sym_ident = sym_table[hash_ident->index];   
    
    // function_name type이 function일 경우에만 파라미터 타입 정보 업데이트
@@ -390,7 +388,7 @@ void updateFunctionParameter(int type, dataType variableType, const char *functi
       sym_ident.param[sym_ident.param_count-1] = paramType;
       
       sym_table[hash_ident->index] = sym_ident;
-      printf("updateFunctionParameter complete\n");
+      //printf("updateFunctionParameter complete\n");
    }
    // printf("updateFunctionParameter complete\n");
 }
@@ -433,7 +431,7 @@ void isIllegalInvoke(const char *function_name){
    struct Ident sym_ident = sym_table[hash_ident->index];
 
    // function_name의 type 정보가 function이 아니거나 파라미터 개수가 맞지 않으면 에러 발생
-   printf("function parameter count: %d, actual argument count: %d\n", sym_ident.param_count, invoked_func_args_cnt);
+   //printf("function parameter count: %d, actual argument count: %d\n", sym_ident.param_count, invoked_func_args_cnt);
 
    if (sym_ident.ident_type != function || sym_ident.param_count != invoked_func_args_cnt) {
       ReportParserError("Invalid function call.");
