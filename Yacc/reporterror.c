@@ -9,6 +9,7 @@ extern void yyerror(char* s);
 int error_cnt = 0;
 char error_message[MAX_ERROR_MSG]; //에러 메세지를 담는 변수 (메인에서 error_message를 출력한다.)
 
+// identifier error report 
 void ReportError(ERRORtypes err)
 {
 	error_cnt++;
@@ -31,7 +32,7 @@ void ReportError(ERRORtypes err)
 	}
 	printf("%d: %s\n", lineNumber, error_message); 
 }
-
+// Parser error report 
 void reportParserError(char* message) {
 	error_cnt++;
 	printf("(line: %d) %s\n", lineNumber, message);
