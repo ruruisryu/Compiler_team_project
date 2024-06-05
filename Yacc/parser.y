@@ -249,7 +249,11 @@ param_type                 : ident
 actual_param_list          : param_type                                                      { updateInvokedFuncArgs(currentArgumentType);} 
                            | actual_param_list TCOMMA param_type                             { updateInvokedFuncArgs(currentArgumentType);} 
                            ;
-primary_exp                : TIDENT                                                          { if (!checkIdentExists(identStr)) ReportParserError("invalid identifier"); }
+primary_exp                : TIDENT                                                          { 
+                                                                                                strcpy_s(currentFunctionName, sizeof(currentFunctionName), identStr);
+                                                                                                dataType* invoked_func_args = (dataType*)malloc(0);
+                                                                                                invoked_func_args_cnt = 0;
+                                                                                                if (!checkIdentExists(identStr)) ReportParserError("invalid identifier"); }
                            | TERROR                           
                            | TLPAREN expression error                                        { yyerrok; ReportParserError("primary_exp"); }
                            | TLPAREN expression TRPAREN                                      { semantic(97); };
@@ -357,7 +361,6 @@ void updateReturnType(dataType returntype, const char *identifier)
       sym_table[hash_ident->index] = sym_ident;
    }
    printf("updateReturnType complete\n");
-   invoked_func_args = (dataType*)malloc(0);
 }
 
 void updateFunctionParameter(dataType paramtype, const char *function_name)
@@ -389,8 +392,9 @@ void updateInvokedFuncArgs(dataType argument_type){
    printf("-------------------------updateInvokedFuncArgs-------------------------\n");
    if(invoked_func_args == NULL){
       printf("invoked_func_args is NULL \n");
-      return;
+      invoked_func_args = (dataType*)malloc(0);
    }
+   printf("invoked_func_args_cnt: %d\n", invoked_func_args_cnt);
    invoked_func_args = (dataType*)realloc(invoked_func_args, (++invoked_func_args_cnt)*sizeof(dataType));
    invoked_func_args[invoked_func_args_cnt-1] = argument_type;
    
@@ -400,10 +404,13 @@ void updateInvokedFuncArgs(dataType argument_type){
 // 함수 정의와 일치하는 호출인지 확인하는 함수
 void isIllegalInvoke(const char *function_name){
    printf("-------------------------isIllegalInvoke-------------------------\n");
+   printf("function name: %s\n", function_name);
    HTpointer hash_ident = getIdentHash(function_name);    
    struct Ident sym_ident = sym_table[hash_ident->index];
 
    // function_name의 type 정보가 function이 아니거나 파라미터 개수가 맞지 않으면 에러 발생
+   printf("function parameter count: %d, actual argument count: %d\n", sym_ident.param_count, invoked_func_args_cnt);
+
    if (sym_ident.ident_type != function || sym_ident.param_count != invoked_func_args_cnt) {
       ReportParserError("Invalid function call.");
       free(invoked_func_args);
@@ -417,5 +424,6 @@ void isIllegalInvoke(const char *function_name){
          return;
       }
    }
+   printf("isIllegalInvoke complete.\n");
    free(invoked_func_args);
 }
