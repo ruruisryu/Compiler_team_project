@@ -20,27 +20,22 @@ void init_sym_table() {
         sym_table[i].strpool_idx = -1;
         sym_table[i].len = -1;
         sym_table[i].linenumber = lineNumber;
-        strncpy_s(sym_table[i].ident_type, sizeof(sym_table[i].ident_type), "none", _TRUNCATE);
-        //strncpy_s(sym_table[i].param, sizeof(sym_table[i].param), "none", _TRUNCATE);
-        strncpy_s(sym_table[i].return_type, sizeof(sym_table[i].return_type), "none", _TRUNCATE);
-        sym_table[i].param_count = 0;
-
 
         // Ensure null-termination
-        sym_table[i].ident_type[sizeof(sym_table[i].ident_type) - 1] = '\0';
-        //sym_table[i].param[sizeof(sym_table[i].param) - 1] = '\0';
-        sym_table[i].return_type[sizeof(sym_table[i].return_type) - 1] = '\0';
+        sym_table[i].ident_type = -1;
+        sym_table[i].return_type = -1;
         sym_table[i].param = (int*)malloc(0);
+        sym_table[i].param_count = 0;
     }
 }
 
 void print_sym_table() {
     int i;
     printf("\nSymbol Table\n");
-    printf("Index\tLine\tSymbol\tType\t\t\tReturnType\tParameter\n");
+    printf("Index\tLine\tSymbol\tType\tReturnType\tParameter\n");
     for (i = 0; i < SYM_TABLE_SIZE; i++) {
         if (sym_table[i].strpool_idx != -1) {
-            printf("[%d]\t%d\t%s\t%s\t\t%s\t\t", i, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, sym_table[i].ident_type, sym_table[i].return_type);
+            printf("[%d]\t%d\t%s\t%d\t%d\t\t", i, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, sym_table[i].ident_type, sym_table[i].return_type);
             for (int j = 0; j < sym_table[i].param_count; j++) {
                 printf("%d ", sym_table[i].param[j]);
             }

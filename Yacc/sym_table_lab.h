@@ -6,7 +6,6 @@
 #define HASH_TABLE_SIZE 11
 #define MAX_STR_POOL	200
 #define MAX_PARAMS_LENGTH 100
-#define MAX_IDENTYPE_LENGTH 100
 #define MAX_RETYPE_LENGTH 100
 
 void init_sym_table();
@@ -17,9 +16,8 @@ typedef struct Ident {
     int strpool_idx;
     int len;
     int linenumber;
-    char ident_type[MAX_IDENTYPE_LENGTH];
-    // char param[MAX_PARAMS_LENGTH];
-    char return_type[MAX_RETYPE_LENGTH];
+    int ident_type;
+    int return_type;
     int* param;
     int param_count;
 };
