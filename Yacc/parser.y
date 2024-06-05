@@ -26,6 +26,7 @@ void isIllegalInvoke(const char *function_name);
 int returnType = 0;
 char currentFunctionName[1000]; // 함수 이름 저장용 전역 변수
 
+// 함수 정상 사용 체크를 위한 파라미터 배열과 파라미터 개수 변수
 dataType* invoked_func_args;
 int invoked_func_args_cnt = 0;
 %}
@@ -306,17 +307,14 @@ int checkIdentExists(const char *identifier)
 void updateIdentType(dataType type, const char *identifier)
 {
     printf("-------------------------updateIdentType-------------------------\n");
-    HTpointer hash_ident = getIdentHash(identifier); 
     printf("identifier: %s\n", identifier);
 
-    if (hash_ident == NULL){
-        // 처리해주기
-    }
-
     // sym_table에서 identifier 정보 가져오기
+    HTpointer hash_ident = getIdentHash(identifier); 
     struct Ident sym_ident = sym_table[hash_ident->index];     
 
-    // identifier의 type 정보가 NULL이거나 -1이라면 identifier의 type 정보를 업데이트
+    // identifier의 type 정보가 NULL이거나 none이라면 identifier의 type 정보를 업데이트
+    // 그 외라면 이미 선언된 identifier를 재선언하고 있는 것이므로 에러 발생
     if (sym_ident.ident_type == NULL || sym_ident.ident_type == none) {
         sym_ident.ident_type = type;
         sym_table[hash_ident->index] = sym_ident;
@@ -333,21 +331,20 @@ void updateIdentType(dataType type, const char *identifier)
 void updateReturnType(dataType returntype, const char *identifier)
 {
    printf("-------------------------updateReturnType-------------------------\n");
+   
+   // sym_table에서 identifier 정보 가져오기
    HTpointer hash_ident = getIdentHash(identifier);    
-    
-   if (hash_ident != NULL) {
-        // 처리해주기
-   }
-
-   // identifier의 type 정보가 function일 경우에만 return값 정보 업데이트
-   struct Ident sym_ident = sym_table[hash_ident->index];   
-   if (sym_ident.ident_type == function) {	// type이 function name인 경우
-      sym_ident.return_type = returntype;	// 매개변수로 받은 returntype 설정
+   struct Ident sym_ident = sym_table[hash_ident->index];
+   
+   // identifier의 type이 function일 경우에만 return값 정보 업데이트
+   // 그 외에 경우에는 return 값이 존재하지 않으므로 none으로 업데이트
+   if (sym_ident.ident_type == function) {	
+      sym_ident.return_type = returntype;	
       printf("sym_ident.ident_type: %s\n", dataTypesChar[sym_ident.ident_type]);
       sym_table[hash_ident->index] = sym_ident;
    } 
    else {
-      sym_ident.return_type = none;	// function name이 아닌 경우는 -1로 설정
+      sym_ident.return_type = none;
       sym_table[hash_ident->index] = sym_ident;
    }
    printf("updateReturnType complete\n");
@@ -358,26 +355,20 @@ void updateFunctionParameter(dataType paramtype, const char *function_name)
 {
    printf("-------------------------updateFunctionParameter-------------------------\n");
    printf("paramtype: %s, function_name: %s\n", dataTypesChar[paramtype], function_name);
+   // 함수 identifier 정보 가져오기
    HTpointer hash_ident = getIdentHash(function_name);    
-    
-   if (hash_ident != NULL) {
-        // 처리해주기
-   }
-   // function_name type 정보가 function일 경우에만 return값 정보 업데이트
    struct Ident sym_ident = sym_table[hash_ident->index];   
-   if (sym_ident.ident_type == function) {	// type이 function name인 경우
+   
+   // function_name type이 function일 경우에만 파라미터 타입 정보 업데이트
+   if (sym_ident.ident_type == function) {	
       sym_ident.param_count++;
       sym_ident.param = (dataType*)realloc(sym_ident.param, (sym_ident.param_count)*sizeof(dataType));
       sym_ident.param[sym_ident.param_count-1] = paramtype;
       
       sym_table[hash_ident->index] = sym_ident;
-   } 
-   else {
-      // 처리해주기
+      printf("updateFunctionParameter complete\n");
    }
-   printf("updateFunctionParameter complete\n");
 }
-
 
 void updateInvokedFuncArgs(dataType argument_type){
    printf("-------------------------updateInvokedFuncArgs-------------------------\n");
@@ -385,6 +376,7 @@ void updateInvokedFuncArgs(dataType argument_type){
       printf("invoked_func_args is NULL \n");
       return;
    }
+   // invoked_func_args에 인수 타입 추가해주기
    invoked_func_args = (dataType*)realloc(invoked_func_args, (++invoked_func_args_cnt)*sizeof(dataType));
    invoked_func_args[invoked_func_args_cnt-1] = argument_type;
    
@@ -394,10 +386,11 @@ void updateInvokedFuncArgs(dataType argument_type){
 // 함수 정의와 일치하는 호출인지 확인하는 함수
 void isIllegalInvoke(const char *function_name){
    printf("-------------------------isIllegalInvoke-------------------------\n");
+   // 함수 identifier 정보 가져오기
    HTpointer hash_ident = getIdentHash(function_name);    
    struct Ident sym_ident = sym_table[hash_ident->index];
 
-   // function_name의 type 정보가 function이 아니거나 파라미터 개수가 맞지 않으면 에러 발생
+   // function_name의 type이 function이 아니거나 파라미터 개수가 맞지 않으면 에러 발생
    if (sym_ident.ident_type != function || sym_ident.param_count != invoked_func_args_cnt) {
       ReportParserError("Invalid function call.");
       free(invoked_func_args);
