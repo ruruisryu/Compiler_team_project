@@ -50,7 +50,7 @@ void print_sym_table() {
     printf("\nSymbol Table\n");
     printf("Index\tLine\tSymbol\tType\t\t\tReturnType\t\tParameter\n");
     for (i = 0; i < SYM_TABLE_SIZE; i++) {
-        if (sym_table[i].strpool_idx != -1) {
+        if (sym_table[i].strpool_idx != -1 && sym_table[i].ident_type != none) {
             printf("[%d]\t%d\t%s\t%s\t%s\t", i, sym_table[i].linenumber, str_pool+sym_table[i].strpool_idx, dataTypesChar[sym_table[i].ident_type], dataTypesChar[sym_table[i].return_type]);
             for (int j = 0; j < sym_table[i].param_count; j++) {
                 printf("%s ", dataTypesChar[sym_table[i].param[j]]);
