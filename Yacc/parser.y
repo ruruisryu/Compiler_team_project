@@ -114,7 +114,7 @@ declaration                : dcl_spec init_dcl_list TSEMI
 init_dcl_list              : init_declarator                                                 
                            | init_dcl_list TCOMMA init_declarator                            ;
 init_declarator            : ident                                                           { updateIdentType(numType, scalar, 0, identStr); } 
-                           | array                                                           { updateIdentType(numType, array, identStr); }
+                           | array                                                           { updateIdentType(numType, array, 0, identStr); }
                            | ident TASSIGN TNUMBER                                           { updateIdentType(numType, scalar, 0, identStr);
                                                                                                 if (getIdentType(identStr) != 1) reportParserError("type mismatch in initialization"); }
                            | ident TASSIGN TFNUMBER                                          { updateIdentType(numType, scalar, 0, identStr); 
