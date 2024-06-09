@@ -70,7 +70,7 @@ extern void reportParserError(char* message);
 HTpointer getIdentHash(const char *identifier);
 dataType getIdentType(const char *identifier);
 int checkIdentExists(const char *identifier);
-void updateIdentType(int numType, dataType variableType, const char *identifier); 
+void updateIdentType(int numType, dataType variableType, int is_param, const char *identifier); 
 void updateReturnType(int returnType, const char *identifier); 
 void updateFunctionParameter(int type, dataType variableType, const char *function_name);
 void updateInvokedFuncArgs(dataType argument_type);
@@ -995,7 +995,7 @@ case 26:
 case 27:
 #line 85 "parser.y"
 { updateIdentType(numType, function, 0, identStr); updateReturnType(numType, identStr); 
-                                                                                                strncpy(currentFunctionName, identStr, 1000); ;
+                                                                                                strcpy_s(currentFunctionName, sizeof(currentFunctionName), identStr); ;
     break;}
 case 29:
 #line 88 "parser.y"
@@ -1031,7 +1031,7 @@ case 52:
     break;}
 case 53:
 #line 117 "parser.y"
-{ updateIdentType(numType, array, identStr); ;
+{ updateIdentType(numType, array, 0, identStr); ;
     break;}
 case 54:
 #line 118 "parser.y"
@@ -1484,8 +1484,12 @@ void updateIdentType(int numType, dataType variableType, int is_param, const cha
     // identifier의 type 정보가 NULL이거나 none이라면 identifier의 type 정보를 업데이트
     // 그 외라면 이미 선언된 identifier를 재선언하고 있는 것이므로 에러 발생
     if (sym_ident.ident_type == NULL || sym_ident.ident_type == none) {
-        sym_ident.ident_type = identType;
-        sym_table[hash_ident->index] = sym_ident;
+         sym_ident.ident_type = identType;
+         // identifier가 파라미터라면 함수 이름도 업데이트
+         if(is_param) {
+            sym_ident.function_name = currentFunctionName;
+         }
+         sym_table[hash_ident->index] = sym_ident;
     } 
     else {
         if (sym_ident.linenumber != lineNumber) {

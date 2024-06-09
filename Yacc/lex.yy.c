@@ -882,20 +882,18 @@ YY_RULE_SETUP
                                         			if(yytext[i] == '\n')
                                             			lineNumber++;
                                     			}
-                                    			printf("%-20d %-20s %-20s\n", lineNumber, "TCOMMENT", yytext);  
                                 		} 
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 57 "scanner.l"
+#line 56 "scanner.l"
 {
                                     			startLineNumber = lineNumber; 
-                                    			printf("%-20d %-20s %-20s\n", lineNumber, "TCOMMENT", yytext);  
                                 		}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 61 "scanner.l"
+#line 59 "scanner.l"
 {
     							if(yyleng >= 15)
     							{
@@ -908,17 +906,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 70 "scanner.l"
+#line 68 "scanner.l"
 return(TNUMBER); //정수 상수
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 71 "scanner.l"
+#line 69 "scanner.l"
 return(TFNUMBER); //실수 상수
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 72 "scanner.l"
+#line 70 "scanner.l"
 {
 							ReportError(illid_digit); 
 							return(TERROR);
@@ -926,17 +924,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 76 "scanner.l"
-printf("lineNumber: %d\n", lineNumber); lineNumber++; 
+#line 74 "scanner.l"
+lineNumber++; 
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 77 "scanner.l"
+#line 75 "scanner.l"
 ;
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 78 "scanner.l"
+#line 76 "scanner.l"
 { 
 							ReportError(illch);
 							return(TERROR);
@@ -944,10 +942,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 84 "scanner.l"
+#line 82 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 951 "lex.yy.c"
+#line 949 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1833,7 +1831,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 84 "scanner.l"
+#line 82 "scanner.l"
 
 int yywrap() {
 	return 1;

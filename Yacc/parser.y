@@ -16,7 +16,7 @@ extern void reportParserError(char* message);
 HTpointer getIdentHash(const char *identifier);
 dataType getIdentType(const char *identifier);
 int checkIdentExists(const char *identifier);
-void updateIdentType(int numType, dataType variableType, const char *identifier); 
+void updateIdentType(int numType, dataType variableType, int is_param, const char *identifier); 
 void updateReturnType(int returnType, const char *identifier); 
 void updateFunctionParameter(int type, dataType variableType, const char *function_name);
 void updateInvokedFuncArgs(dataType argument_type);
