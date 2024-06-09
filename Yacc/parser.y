@@ -337,34 +337,11 @@ void updateIdentType(int numType, dataType variableType, int is_param, const cha
     // 그 외라면 이미 선언된 identifier를 재선언하고 있는 것이므로 에러 발생
     if (sym_ident.ident_type == NULL || sym_ident.ident_type == none) {
          sym_ident.ident_type = identType;
+         // identifier가 파라미터라면 함수 이름도 업데이트
          if(is_param) {
-            printf("function_name: %s", currentFunctionName);
             sym_ident.function_name = currentFunctionName;
          }
          sym_table[hash_ident->index] = sym_ident;
-    } 
-    else {
-        if (sym_ident.linenumber != lineNumber) {
-            reportParserError("identifier is already declared");
-        }
-    }
-}
-
-// parameter identifier의 정보를 저장하는 함수
-void updateParamType(int numType, dataType variableType, int is_param, const char *identifier) 
-{
-    // 자료형 구분
-    dataType identType = classifyDataType(numType, variableType, is_param);
-
-    // sym_table에서 identifier 정보 가져오기
-    HTpointer hash_ident = getIdentHash(identifier); 
-    struct Ident sym_ident = sym_table[hash_ident->index];     
-
-    // identifier의 type 정보가 NULL이거나 none이라면 identifier의 type 정보를 업데이트
-    // 그 외라면 이미 선언된 identifier를 재선언하고 있는 것이므로 에러 발생
-    if (sym_ident.ident_type == NULL || sym_ident.ident_type == none) {
-        sym_ident.ident_type = identType;
-        sym_table[hash_ident->index] = sym_ident;
     } 
     else {
         if (sym_ident.linenumber != lineNumber) {
