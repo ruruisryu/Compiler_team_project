@@ -31,6 +31,7 @@ typedef struct Ident {
     int len;
     int linenumber;
     dataType ident_type;
+	char* function_name;
     dataType return_type;
     dataType* param;
     int param_count;
